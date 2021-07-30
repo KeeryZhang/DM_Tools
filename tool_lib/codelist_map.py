@@ -12,10 +12,13 @@ if __name__ == "__main__":
     ws = wb.get_sheet_by_name(r'spec_005')
 
     Codelist_map = {}
+    Codelist_map_plus = {}
+    Codelist_map_minus = {}
+    Codelist_map_nosymbol = {}
     for row in range(2,ws.max_row+1):
-        check = ws['D'+str(row)].value
+        check = ws['A'+str(row)].value
 
-        plus_raw = ws['E'+str(row)].value
+        plus_raw = ws['B'+str(row)].value
         if plus_raw == None:
             pass
         else:
@@ -24,8 +27,10 @@ if __name__ == "__main__":
             else:
                 plus = [plus_raw]
             Codelist_map.setdefault((check, '+'), plus)
+            Codelist_map_plus.setdefault(check, plus)
+            Codelist_map_nosymbol.setdefault(check, plus)
 
-        minus_raw = ws['F'+str(row)].value
+        minus_raw = ws['C'+str(row)].value
         if minus_raw == None:
             pass
         else:
@@ -33,11 +38,19 @@ if __name__ == "__main__":
                 minus = minus_raw.split(',')
             else:
                 minus = [minus_raw]
-            Codelist_map.setdefault((check, '-'), minus)        
+            Codelist_map.setdefault((check, '-'), minus)     
+            Codelist_map_minus.setdefault(check, minus)
+            if check in Codelist_map_nosymbol:
+                Codelist_map_nosymbol[check].extend(minus)
+            else:
+                Codelist_map_nosymbol.setdefault(check, minus)  
 
     wb.close()
     
     with open("outs\Codelist_map.py", 'w+') as f:
-        f.write('Codelist_map = ' + pprint.pformat(Codelist_map))
+        f.write('Codelist_map = ' + pprint.pformat(Codelist_map) + '\n\n')
+        f.write('Codelist_map_plus = ' + pprint.pformat(Codelist_map_plus) + '\n\n')
+        f.write('Codelist_map_minus = ' + pprint.pformat(Codelist_map_minus) + '\n\n')
+        f.write('Codelist_map_nosymbol = ' + pprint.pformat(Codelist_map_nosymbol) + '\n\n')
         f.close()
     

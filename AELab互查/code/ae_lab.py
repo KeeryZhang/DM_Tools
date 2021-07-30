@@ -36,11 +36,26 @@ def data1(ws, keys):
         ST = parse_dmy(AEST)
         EN = parse_dmy(AEEN)
         GR = parse_dmy(AEGR)
+        
+        AnalyteNamelist = list()
+        AE_PTlist = list()
+        if AE_PT in Coderevert_map:
+            for i in Coderevert_map[AE_PT]:
+                AnalyteNamelist.append(i[0])
 
+            for AE in Codelist_map:
+                if AE[0] in AnalyteNamelist:
+                    AE_PTlist.extend([str(x) for x in Codelist_map[AE]])
+            AE_PTlist=list(set(AE_PTlist))
+            AE_PTlist.sort()
+            AE_PTlist = tuple(AE_PTlist)
+        else:
+            AE_PTlist.append(AE_PT)
+            AE_PTlist = tuple(AE_PTlist)
         data_ws.setdefault(patientId, {})
-        data_ws[patientId].setdefault(AE_PT, {})
-        data_ws[patientId][AE_PT].setdefault(ST, {})
-        data_ws[patientId][AE_PT][ST].setdefault(row, {'EN':EN, 'GR':GR, 'AEOUT':AEOUT})
+        data_ws[patientId].setdefault(AE_PTlist, {})
+        data_ws[patientId][AE_PTlist].setdefault(ST, {})
+        data_ws[patientId][AE_PTlist][ST].setdefault(row, {'EN':EN, 'GR':GR, 'AEOUT':AEOUT})
     return data_ws
 
 
