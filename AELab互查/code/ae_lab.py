@@ -14,44 +14,11 @@ sys.path.append("..\..")
 from tool_lib.outs.Codelist_map import Codelist_map as Codelist_map
 from tool_lib.outs.Coderevert_map import Coderevert_map as Coderevert_map
 
-M2m = {'JAN':1,'FEB':2,'MAR':3,'APR':4,'MAY':5,'JUN':6,'JUL':7,'AUG':8,'SEP':9,'OCT':10,'NOV':11,'DEC':12}
+from tool_lib.utils import findkeyscolumn, parse_dmy, mark
+
+
 keys1list = [r'{change}','[Subject]','[AEYN]','[AETERM_PT]','[AESTDAT_RAW]','[AEENDAT_RAW]','[AEGRDAT_RAW]','[AEOUT]']
 keys2list = [r'{change}','[Subject]','[RecordDate]','[AnalyteName]','[AnalyteValue]','[LabFlag]','[ClinSigValue]']
-
-# Codelist_map = {('RBC', '-'): ['Red blood cell count decreased', 'Anaemia'], ('HGB', '-'): ['Anaemia'], ('HCT', '-'): ['Haematocrit decreased'], ('WBC', '+'): ['White blood cell count increased'], ('WBC', '-'): ['White blood cell count decreased'], ('NEUT', '+'): ['Neutrophil count increased'], ('NEUT', '-'): ['Neutrophil count decreased'], ('EOS', '+'): ['Eosinophil count increased'], ('EOS', '-'): ['Eosinophil count decreased'], ('BASO', '+'): ['Basophil count increased'], ('BASO', '-'): ['Basophilopenia'], ('LYM', '+'): ['Lymphocyte count increased'], ('LYM', '-'): ['Lymphocyte count decreased'], ('MONO', '+'): ['Monocyte count increased', 'Monocyte percentage increased'], ('MONO', '-'): ['Lymphocyte count decreased'], ('PLAT', '+'): ['Platelet count increased'], ('PLAT', '-'): ['Platelet count decreased', 'Thrombocytopenia'], ('BILI', '+'): ['Blood bilirubin increased'], ('ALT', '+'): ['Alanine aminotransferase increased'], ('AST', '+'): ['Aspartate aminotransferase increased'], ('GGT', '+'): ['Gamma-glutamyltransferase increased'], ('ALP', '+'): ['Blood alkaline phosphatase increased'], ('ALB', '-'): ['Hypoalbuminaemia', 'Blood albumin decreased'], ('PROT', '-'): ['Protein total decreased'], ('LDH', '+'): ['Blood lactate dehydrogenase increased'], ('UREA', '+'): ['Blood urea increased'], ('CREAT', '+'): ['Blood creatinine increased'], ('SODIUM', '+'): ['Hypernatraemia'], ('SODIUM', '-'): ['Hyponatraemia', 'Blood sodium decreased'], ('K', '+'): ['Hyperkalaemia', 'Blood potassium increased'], ('K', '-'): ['Hypokalaemia', 'Blood potassium decreased'], ('CL', '+'): ['Hyperchloraemia'], ('CL', '-'): ['Hypochloraemia', 'Blood chloride decreased'], ('MG', '+'): ['Hypermagnesaemia'], ('MG', '-'): ['Hypomagnesaemia', 'Blood magnesium decreased'], ('CA', '+'): ['Blood calcium increased', 'Hypercalcaemia'], ('CA', '-'): ['Blood calcium decreased', 'Calcium ionised decreased', 'Hypocalcaemia'], ('PHOS', '+'): ['Blood phosphorus increased', 'Hyperphosphataemia'], ('PHOS', '-'): ['Hypophosphataemia', 'Blood phosphorus decreased'], ('AMYLASE', '+'): ['Amylase increased'], ('GLUC_FAST', '+'): ['Hyperglycaemia', 'Blood glucose increased'], ('GLUC_FAST', '-'): ['Hypoglycaemia'], ('BILDIR', '+'): ['Bilirubin conjugated increased'], ('CK', '+'): ['Blood creatine phosphokinase increased'], ('UREAN', '+'): ['Blood urea increased'], ('UREAN', '-'): ['Blood urea decreased'], ('PT', '+'): ['Prothrombin time prolonged'], ('INR', '+'): ['International normalised ratio increased'], ('T3', '-'): ['Tri-iodothyronine decreased'], ('T3FR', '+'): ['Tri-iodothyronine free increased'], ('T3FR', '-'): ['Tri-iodothyronine free decreased'], ('T4FR', '+'): ['Thyroxine free increased'], ('T4FR', '-'): ['Thyroxine free decreased'], ('TSH', '+'): ['Blood thyroid stimulating hormone increased'], ('TSH', '-'): ['Blood thyroid stimulating hormone decreased'], ('CKMB', '+'): ['Creatine kinase MB increased'], ('CRP', '+'): ['C-reactive protein increased']}
-
-
-# Coderevert_map = {'Red blood cell count decreased': [('RBC', '-')], 'Anaemia': [('RBC', '-'), ('HGB', '-')], 'Haematocrit decreased': [('HCT', '-')], 'White blood cell count increased': [('WBC', '+')], 'White blood cell count decreased': [('WBC', '-')], 'Neutrophil count increased': [('NEUT', '+')], 'Neutrophil count decreased': [('NEUT', '-')], 'Eosinophil count increased': [('EOS', '+')], 'Eosinophil count decreased': [('EOS', '-')], 'Basophil count increased': [('BASO', '+')], 'Basophilopenia': [('BASO', '-')], 'Lymphocyte count increased': [('LYM', '+')], 'Lymphocyte count decreased': [('LYM', '-'), ('MONO', '-')], 'Monocyte count increased': [('MONO', '+')], 'Monocyte percentage increased': [('MONO', '+')], 'Platelet count increased': [('PLAT', '+')], 'Platelet count decreased': [('PLAT', '-')], 'Thrombocytopenia': [('PLAT', '-')], 'Blood bilirubin increased': [('BILI', '+')], 'Alanine aminotransferase increased': [('ALT', '+')], 'Aspartate aminotransferase increased': [('AST', '+')], 'Gamma-glutamyltransferase increased': [('GGT', '+')], 'Blood alkaline phosphatase increased': [('ALP', '+')], 'Hypoalbuminaemia': [('ALB', '-')], 'Blood albumin decreased': [('ALB', '-')], 'Protein total decreased': [('PROT', '-')], 'Blood lactate dehydrogenase increased': [('LDH', '+')], 'Blood urea increased': [('UREA', '+'), ('UREAN', '+')], 'Blood creatinine increased': [('CREAT', '+')], 'Hypernatraemia': [('SODIUM', '+')], 'Hyponatraemia': [('SODIUM', '-')], 'Blood sodium decreased': [('SODIUM', '-')], 'Hyperkalaemia': [('K', '+')], 'Blood potassium increased': [('K', '+')], 'Hypokalaemia': [('K', '-')], 'Blood potassium decreased': [('K', '-')], 'Hyperchloraemia': [('CL', '+')], 'Hypochloraemia': [('CL', '-')], 'Blood chloride decreased': [('CL', '-')], 'Hypermagnesaemia': [('MG', '+')], 'Hypomagnesaemia': [('MG', '-')], 'Blood magnesium decreased': [('MG', '-')], 'Blood calcium increased': [('CA', '+')], 'Hypercalcaemia': [('CA', '+')], 'Blood calcium decreased': [('CA', '-')], 'Calcium ionised decreased': [('CA', '-')], 'Hypocalcaemia': [('CA', '-')], 'Blood phosphorus increased': [('PHOS', '+')], 'Hyperphosphataemia': [('PHOS', '+')], 'Hypophosphataemia': [('PHOS', '-')], 'Blood phosphorus decreased': [('PHOS', '-')], 'Amylase increased': [('AMYLASE', '+')], 'Hyperglycaemia': [('GLUC_FAST', '+')], 'Blood glucose increased': [('GLUC_FAST', '+')], 'Hypoglycaemia': [('GLUC_FAST', '-')], 'Bilirubin conjugated increased': [('BILDIR', '+')], 'Blood creatine phosphokinase increased': [('CK', '+')], 'Blood urea decreased': [('UREAN', '-')], 'Prothrombin time prolonged': [('PT', '+')], 'International normalised ratio increased': [('INR', '+')], 'Tri-iodothyronine decreased': [('T3', '-')], 'Tri-iodothyronine free increased': [('T3FR', '+')], 'Tri-iodothyronine free decreased': [('T3FR', '-')], 'Thyroxine free increased': [('T4FR', '+')], 'Thyroxine free decreased': [('T4FR', '-')], 'Blood thyroid stimulating hormone increased': [('TSH', '+')], 'Blood thyroid stimulating hormone decreased': [('TSH', '-')], 'Creatine kinase MB increased': [('CKMB', '+')], 'C-reactive protein increased': [('CRP', '+')]}
-
-
-def findkeyscolumn(ws, keyslist):
-    keys = {}
-    for column in range(1, ws.max_column+1):
-        row_letter = get_column_letter(column)
-        for key in keyslist:
-            if key in ws[row_letter+'1'].value:
-                keys.setdefault(key, row_letter)
-                keyslist.remove(key)
-                break
-    return keys
-
-
-def parse_dmy(s):
-    if s == None:
-        s = 'UN UNK 0000'
-    day_s,mon_s,year_s=s.split(' ')
-    if day_s == 'UN':
-        day_s = '1'
-    if mon_s == 'UNK':
-        mon_s = 'JAN'
-    if year_s == '0000':
-        year_s = '1970'
-    return datetime(int(year_s),int(M2m[mon_s]),int(day_s))
-
-
-def mark(ws, col, row, msg):
-    ws[col+str(row)] = msg
-    return
 
 
 def data1(ws, keys):
@@ -279,9 +246,9 @@ def ae2lab(data_ws1, data_ws2, ws1):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ae", default=r'E:\python\DM_Tool\20210726\CIBI308C303_AE_20210726.xlsx', help="Please add AE file full path")
+    parser.add_argument("--ae", default=r'C:\Users\zhangk22\Documents\GitHub\DM_Tools\AELab互查\sheets\AE.xlsx', help="Please add AE file full path")
     parser.add_argument("--aesheet", default=r'AE001_1|不良事件-不包括输液反应及免疫相关不良事件', help="Please set sheet name of ae")
-    parser.add_argument("--lab", default=r'E:\python\DM_Tool\20210726\CIBI308C303_Lab_20210726.xlsx', help="Please add CB file full path")
+    parser.add_argument("--lab", default=r'C:\Users\zhangk22\Documents\GitHub\DM_Tools\AELab互查\sheets\lab.xlsx', help="Please add CB file full path")
     parser.add_argument("--labsheet", default=r'LAB|实验室检测', help="Please set sheet name of cb")
     parser.add_argument("--flow", default="all", help="Please state the flow you need to run")
 
@@ -307,10 +274,10 @@ if __name__ == "__main__":
     wb2savepath = '.'.join([''.join([lab_pathlist[0], '_checkout']), lab_pathlist[1]])
     try:
         wb1 = openpyxl.load_workbook(ae_path)
-        ws1 = wb1.get_sheet_by_name(ae_sheet)
+        ws1 = wb1[ae_sheet]
 
         wb2 = openpyxl.load_workbook(lab_path)
-        ws2 = wb2.get_sheet_by_name(lab_sheet)
+        ws2 = wb2[lab_sheet]
                
         keys1 = findkeyscolumn(ws1, keys1list)
         keys2 = findkeyscolumn(ws2, keys2list)
