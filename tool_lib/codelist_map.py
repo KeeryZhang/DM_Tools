@@ -3,9 +3,10 @@
 
 import openpyxl
 from openpyxl.utils import get_column_letter, column_index_from_string
+import pprint
 
 if __name__ == "__main__":
-    rave_manual_Codelist = r'E:\python\project3\rave_manual_Codelist.xlsx'
+    rave_manual_Codelist = r'source\rave_manual_Codelist.xlsx'
 
     wb = openpyxl.load_workbook(rave_manual_Codelist)
     ws = wb.get_sheet_by_name(r'spec_005')
@@ -35,5 +36,8 @@ if __name__ == "__main__":
             Codelist_map.setdefault((check, '-'), minus)        
 
     wb.close()
-    print(Codelist_map)
+    
+    with open("outs\Codelist_map.py", 'w+') as f:
+        f.write('Codelist_map = ' + pprint.pformat(Codelist_map))
+        f.close()
     
