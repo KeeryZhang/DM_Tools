@@ -1,0 +1,17 @@
+
+Codelist_map = {('RBC', '-'): ['Red blood cell count decreased', 'Anaemia'], ('HGB', '-'): ['Anaemia'], ('HCT', '-'): ['Haematocrit decreased'], ('WBC', '+'): ['White blood cell count increased'], ('WBC', '-'): ['White blood cell count decreased'], ('NEUT', '+'): ['Neutrophil count increased'], ('NEUT', '-'): ['Neutrophil count decreased'], ('EOS', '+'): ['Eosinophil count increased'], ('EOS', '-'): ['Eosinophil count decreased'], ('BASO', '+'): ['Basophil count increased'], ('BASO', '-'): ['Basophilopenia'], ('LYM', '+'): ['Lymphocyte count increased'], ('LYM', '-'): ['Lymphocyte count decreased'], ('MONO', '+'): ['Monocyte count increased', 'Monocyte percentage increased'], ('MONO', '-'): ['Lymphocyte count decreased'], ('PLAT', '+'): ['Platelet count increased'], ('PLAT', '-'): ['Platelet count decreased', 'Thrombocytopenia'], ('BILI', '+'): ['Blood bilirubin increased'], ('ALT', '+'): ['Alanine aminotransferase increased'], ('AST', '+'): ['Aspartate aminotransferase increased'], ('GGT', '+'): ['Gamma-glutamyltransferase increased'], ('ALP', '+'): ['Blood alkaline phosphatase increased'], ('ALB', '-'): ['Hypoalbuminaemia', 'Blood albumin decreased'], ('PROT', '-'): ['Protein total decreased'], ('LDH', '+'): ['Blood lactate dehydrogenase increased'], ('UREA', '+'): ['Blood urea increased'], ('CREAT', '+'): ['Blood creatinine increased'], ('SODIUM', '+'): ['Hypernatraemia'], ('SODIUM', '-'): ['Hyponatraemia', 'Blood sodium decreased'], ('K', '+'): ['Hyperkalaemia', 'Blood potassium increased'], ('K', '-'): ['Hypokalaemia', 'Blood potassium decreased'], ('CL', '+'): ['Hyperchloraemia'], ('CL', '-'): ['Hypochloraemia', 'Blood chloride decreased'], ('MG', '+'): ['Hypermagnesaemia'], ('MG', '-'): ['Hypomagnesaemia', 'Blood magnesium decreased'], ('CA', '+'): ['Blood calcium increased', 'Hypercalcaemia'], ('CA', '-'): ['Blood calcium decreased', 'Calcium ionised decreased', 'Hypocalcaemia'], ('PHOS', '+'): ['Blood phosphorus increased', 'Hyperphosphataemia'], ('PHOS', '-'): ['Hypophosphataemia', 'Blood phosphorus decreased'], ('AMYLASE', '+'): ['Amylase increased'], ('GLUC_FAST', '+'): ['Hyperglycaemia', 'Blood glucose increased'], ('GLUC_FAST', '-'): ['Hypoglycaemia'], ('BILDIR', '+'): ['Bilirubin conjugated increased'], ('CK', '+'): ['Blood creatine phosphokinase increased'], ('UREAN', '+'): ['Blood urea increased'], ('UREAN', '-'): ['Blood urea decreased'], ('PT', '+'): ['Prothrombin time prolonged'], ('INR', '+'): ['International normalised ratio increased'], ('T3', '-'): ['Tri-iodothyronine decreased'], ('T3FR', '+'): ['Tri-iodothyronine free increased'], ('T3FR', '-'): ['Tri-iodothyronine free decreased'], ('T4FR', '+'): ['Thyroxine free increased'], ('T4FR', '-'): ['Thyroxine free decreased'], ('TSH', '+'): ['Blood thyroid stimulating hormone increased'], ('TSH', '-'): ['Blood thyroid stimulating hormone decreased'], ('CKMB', '+'): ['Creatine kinase MB increased'], ('CRP', '+'): ['C-reactive protein increased']}
+
+Coderevert_map = {}
+
+Codelist = list(Codelist_map.items())
+
+for i in range(0, len(Codelist)):
+    codes = Codelist[i][1]
+    for code in codes:
+        relist = []
+        Coderevert_map.setdefault(code, relist)
+        if Codelist[i][0] in Coderevert_map[code]:
+            continue
+        Coderevert_map[code].append(Codelist[i][0])
+
+print(Coderevert_map)
