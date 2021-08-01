@@ -261,9 +261,9 @@ def ae2lab(data_ws1, data_ws2, ws1):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ae", default=r'C:\Users\zhangk22\Documents\GitHub\DM_Tools\AELab互查\sheets\AE.xlsx', help="Please add AE file full path")
+    parser.add_argument("--ae", default=r'..\sheets\AE.xlsx', help="Please add AE file full path")
     parser.add_argument("--aesheet", default=r'AE001_1|不良事件-不包括输液反应及免疫相关不良事件', help="Please set sheet name of ae")
-    parser.add_argument("--lab", default=r'C:\Users\zhangk22\Documents\GitHub\DM_Tools\AELab互查\sheets\lab.xlsx', help="Please add CB file full path")
+    parser.add_argument("--lab", default=r'..\sheets\lab.xlsx', help="Please add CB file full path")
     parser.add_argument("--labsheet", default=r'LAB|实验室检测', help="Please set sheet name of cb")
     parser.add_argument("--flow", default="all", help="Please state the flow you need to run")
 

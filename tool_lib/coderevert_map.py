@@ -1,3 +1,10 @@
+#!/usr/bin/python
+# -*- coding:UTF-8 -*-
+
+import sys
+
+sys.path.append("..\..")
+
 from outs.Codelist_map import Codelist_map as Codelist_map
 import pprint
 

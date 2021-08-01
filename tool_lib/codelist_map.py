@@ -4,17 +4,21 @@
 import openpyxl
 from openpyxl.utils import get_column_letter, column_index_from_string
 import pprint
+import sys
+
+sys.path.append(".")
 
 if __name__ == "__main__":
     rave_manual_Codelist = r'source\rave_manual_Codelist.xlsx'
 
     wb = openpyxl.load_workbook(rave_manual_Codelist)
-    ws = wb.get_sheet_by_name(r'spec_005')
+    ws = wb[r'spec_005']
 
     Codelist_map = {}
     Codelist_map_plus = {}
     Codelist_map_minus = {}
     Codelist_map_nosymbol = {}
+
     for row in range(2,ws.max_row+1):
         check = ws['A'+str(row)].value
 
