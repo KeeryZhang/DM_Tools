@@ -5,6 +5,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter, column_index_from_string
 import pprint
 import sys
+from copy import deepcopy
 
 sys.path.append(".")
 
@@ -30,9 +31,9 @@ if __name__ == "__main__":
                 plus = plus_raw.split(',')
             else:
                 plus = [plus_raw]
-            Codelist_map.setdefault((check, '+'), plus)
-            Codelist_map_plus.setdefault(check, plus)
-            Codelist_map_nosymbol.setdefault(check, plus)
+            Codelist_map.setdefault((check, '+'), deepcopy(plus))
+            Codelist_map_plus.setdefault(check, deepcopy(plus))
+            Codelist_map_nosymbol.setdefault(check, deepcopy(plus))
 
         minus_raw = ws['C'+str(row)].value
         if minus_raw == None:
