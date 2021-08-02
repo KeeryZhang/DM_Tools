@@ -3,15 +3,13 @@
 
 import sys
 
-sys.path.append("..\..")
+sys.path.append(".")
 
 from outs.Codelist_map import Codelist_map as Codelist_map
 import pprint
 
 Coderevert_map_withsymbol = {}
 Coderevert_map_nosymbol = {}
-AnalyteNamelist = list()
-AE_PTlist = list()
 Codelist = list(Codelist_map.items())
 
 for i in range(0, len(Codelist)):
@@ -25,12 +23,14 @@ for i in range(0, len(Codelist)):
 
        
 for AE_PT in Coderevert_map_withsymbol:
+    AE_PTlist = list()
+    AnalyteNamelist = list()
     for i in Coderevert_map_withsymbol[AE_PT]:
         AnalyteNamelist.append(i[0])
 
     for AE in Codelist_map:
         if AE[0] in AnalyteNamelist:
-            AE_PTlist.extend([str(x) for x in Codelist_map[AE]])
+            AE_PTlist.extend(Codelist_map[AE])
     AE_PTlist=list(set(AE_PTlist))
     AE_PTlist.sort()
     AE_PTlist = tuple(AE_PTlist)
@@ -40,4 +40,4 @@ for AE_PT in Coderevert_map_withsymbol:
 
 with open('outs\Coderevert_map.py', 'w') as f:
     f.write('Coderevert_map_withsymbol = ' + pprint.pformat(Coderevert_map_withsymbol) + '\n\n')
-    f.write('Coderevert_map_nosymbol =' + pprint.pformat(Coderevert_map_nosymbol) + '\n\n')
+    f.write('Coderevert_map_nosymbol = ' + pprint.pformat(Coderevert_map_nosymbol) + '\n\n')
