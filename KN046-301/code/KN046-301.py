@@ -18,28 +18,44 @@ keys3list = [r'{change}', '[Subject]', '[InstanceName]', '[NWTLEYN]']
 keys4list = [r'{change}', '[Subject]', '[InstanceName]', '[RSYN]', '[RSDAT]', '[TRGRESP]', '[NTRGRESP]', '[NEWLIND]']
 
 
-def data1(ws1, keys1):
-    data_ws1 = {}
+def data1(ws, keys):
+    data_ws = {}
+    for row in range(2, ws.max_row+1):
+        if ws[keys[r'{change}']+str(row)].value == 'deleted':
+            continue
+        if ws[keys['[Subject]']+str(row)].value == None:
+            continue
+
+        Subject = ws[keys['[Subject]']+str(row)].value
+        InstanceName = ws[keys['[InstanceName]']+str(row)].value
+        TLYN = ws[keys['[TLYN]']+str(row)].value
+        TLDIAT = ws[keys['[TLDIAT]']+str(row)].value
+        TLDAT = ws[keys['[TLDAT]']+str(row)].value
+        TLMETHOD = ws[keys['[TLMETHOD]']+str(row)].value
+        TLLNKID = ws[keys['[TLLNKID]']+str(row)].value
+        
+        data_ws.setdefault(Subject, {})
+        data_ws[Subject].setdefault(InstanceName, {})
+        data_ws[Subject][InstanceName].setdefault(row, {'TLYN':TLYN, 'TLDIAT':TLDIAT, 'TLDAT':TLDAT, 'TLMETHOD':TLMETHOD, 'TLLNKID':TLLNKID})
+    return data_ws
+
+
+def data2(ws, keys):
+    data_ws = {}
     
-    return data_ws1
+    return data_ws
 
 
-def data2(ws2, keys2):
-    data_ws2 = {}
+def data3(ws, keys):
+    data_ws = {}
     
-    return data_ws2
+    return data_ws
 
 
-def data3(ws3, keys3):
-    data_ws3 = {}
+def data4(ws, keys):
+    data_ws = {}
     
-    return data_ws3
-
-
-def data4(ws4, keys4):
-    data_ws4 = {}
-    
-    return data_ws4
+    return data_ws
 
 
 def bbzcheck(data_ws1, data_ws4, ws1):
