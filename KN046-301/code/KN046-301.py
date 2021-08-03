@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 import sys
 import argparse
+from copy import deepcopy
 
 sys.path.append("..\..")
 
@@ -18,47 +19,132 @@ keys3list = [r'{change}', '[Subject]', '[InstanceName]', '[NWTLEYN]']
 keys4list = [r'{change}', '[Subject]', '[InstanceName]', '[RSYN]', '[RSDAT]', '[TRGRESP]', '[NTRGRESP]', '[NEWLIND]']
 
 
-def data1(ws, keys):
+# def data1(ws, keys):
+#     data_ws = {}
+#     for row in range(2, ws.max_row+1):
+#         if ws[keys[r'{change}']+str(row)].value == 'deleted':
+#             continue
+#         if ws[keys['[Subject]']+str(row)].value == None:
+#             continue
+
+#         Subject = ws[keys['[Subject]']+str(row)].value
+#         InstanceName = ws[keys['[InstanceName]']+str(row)].value
+#         TLYN = ws[keys['[TLYN]']+str(row)].value
+#         TLDIAT = ws[keys['[TLDIAT]']+str(row)].value
+#         TLDAT = ws[keys['[TLDAT]']+str(row)].value
+#         TLMETHOD = ws[keys['[TLMETHOD]']+str(row)].value
+#         TLLNKID = ws[keys['[TLLNKID]']+str(row)].value
+        
+#         data_ws.setdefault(Subject, {})
+#         data_ws[Subject].setdefault(InstanceName, {})
+#         data_ws[Subject][InstanceName].setdefault(row, {'TLYN':TLYN, 'TLDIAT':TLDIAT, 'TLDAT':TLDAT, 'TLMETHOD':TLMETHOD, 'TLLNKID':TLLNKID})
+#     return data_ws
+
+
+# def data2(ws, keys):
+#     data_ws = {}
+#     for row in range(2, ws.max_row+1):
+#         if ws[keys[r'{change}']+str(row)].value == 'deleted':
+#             continue
+#         if ws[keys['[Subject]']+str(row)].value == None:
+#             continue
+
+#         Subject = ws[keys['[Subject]']+str(row)].value
+#         InstanceName = ws[keys['[InstanceName]']+str(row)].value
+#         NTLYN = ws[keys['[NTLYN]']+str(row)].value
+#         NTLDAT = ws[keys['[NTLDAT]']+str(row)].value
+#         NTLORRES = ws[keys['[NTLORRES]']+str(row)].value
+#         NTLLNKID = ws[keys['[NTLLNKID]']+str(row)].value
+#         NTLMTHOD = ws[keys['[NTLMTHOD]']+str(row)].value
+        
+#         data_ws.setdefault(Subject, {})
+#         data_ws[Subject].setdefault(InstanceName, {})
+#         data_ws[Subject][InstanceName].setdefault(row, {'NTLYN':NTLYN, 'NTLDAT':NTLDAT, 'NTLORRES':NTLORRES, 'NTLLNKID':NTLLNKID, 'NTLMTHOD':NTLMTHOD})
+#     return data_ws
+
+
+# def data3(ws, keys):
+#     data_ws = {}
+#     for row in range(2, ws.max_row+1):
+#         if ws[keys[r'{change}']+str(row)].value == 'deleted':
+#             continue
+#         if ws[keys['[Subject]']+str(row)].value == None:
+#             continue
+
+#         Subject = ws[keys['[Subject]']+str(row)].value
+#         InstanceName = ws[keys['[InstanceName]']+str(row)].value
+#         NWTLEYN = ws[keys['[NWTLEYN]']+str(row)].value
+        
+#         data_ws.setdefault(Subject, {})
+#         data_ws[Subject].setdefault(InstanceName, {})
+#         data_ws[Subject][InstanceName].setdefault(row, {'NWTLEYN':NWTLEYN})
+#     return data_ws
+
+
+# def data4(ws, keys):
+#     data_ws = {}
+#     for row in range(2, ws.max_row+1):
+#         if ws[keys[r'{change}']+str(row)].value == 'deleted':
+#             continue
+#         if ws[keys['[Subject]']+str(row)].value == None:
+#             continue
+
+#         Subject = ws[keys['[Subject]']+str(row)].value
+#         InstanceName = ws[keys['[InstanceName]']+str(row)].value
+#         RSYN = ws[keys['[RSYN]']+str(row)].value
+#         RSDAT = ws[keys['[RSDAT]']+str(row)].value
+#         TRGRESP = ws[keys['[TRGRESP]']+str(row)].value
+#         NTRGRESP = ws[keys['[NTRGRESP]']+str(row)].value
+#         NEWLIND = ws[keys['[NEWLIND]']+str(row)].value
+        
+#         data_ws.setdefault(Subject, {})
+#         data_ws[Subject].setdefault(InstanceName, {})
+#         data_ws[Subject][InstanceName].setdefault(row, {'RSYN':RSYN, 'RSDAT':RSDAT, 'TRGRESP':TRGRESP, 'NTRGRESP':NTRGRESP, 'NEWLIND':NEWLIND})
+#     return data_ws
+
+
+def data(ws, keys):
     data_ws = {}
     for row in range(2, ws.max_row+1):
-        if ws[keys[r'{change}']+str(row)].value == 'deleted':
+        tmp_keys = deepcopy(keys)
+        if ws[tmp_keys[r'{change}']+str(row)].value == 'deleted':
             continue
-        if ws[keys['[Subject]']+str(row)].value == None:
+        if ws[tmp_keys['[Subject]']+str(row)].value == None:
             continue
-
-        Subject = ws[keys['[Subject]']+str(row)].value
-        InstanceName = ws[keys['[InstanceName]']+str(row)].value
-        TLYN = ws[keys['[TLYN]']+str(row)].value
-        TLDIAT = ws[keys['[TLDIAT]']+str(row)].value
-        TLDAT = ws[keys['[TLDAT]']+str(row)].value
-        TLMETHOD = ws[keys['[TLMETHOD]']+str(row)].value
-        TLLNKID = ws[keys['[TLLNKID]']+str(row)].value
+                
+        Subject = ws[tmp_keys['[Subject]']+str(row)].value
+        InstanceName = ws[tmp_keys['[InstanceName]']+str(row)].value
         
         data_ws.setdefault(Subject, {})
         data_ws[Subject].setdefault(InstanceName, {})
-        data_ws[Subject][InstanceName].setdefault(row, {'TLYN':TLYN, 'TLDIAT':TLDIAT, 'TLDAT':TLDAT, 'TLMETHOD':TLMETHOD, 'TLLNKID':TLLNKID})
-    return data_ws
+        data_ws[Subject][InstanceName].setdefault(row, {})
 
+        tmp_keys.pop(r'{change}')
+        tmp_keys.pop('[Subject]')
+        tmp_keys.pop('[InstanceName]')
 
-def data2(ws, keys):
-    data_ws = {}
-    
-    return data_ws
-
-
-def data3(ws, keys):
-    data_ws = {}
-    
-    return data_ws
-
-
-def data4(ws, keys):
-    data_ws = {}
-    
+        for key in tmp_keys:
+            data_ws[Subject][InstanceName][row].update({key:ws[tmp_keys[key]+str(row)].value})
     return data_ws
 
 
 def bbzcheck(data_ws1, data_ws4, ws1):
+    ws1.insert_cols(1)
+    ws1['A1'].value = '靶病灶检查结果'
+
+    for id in data_ws1:
+        pid = data_ws1[id]
+        for instance in pid:
+            ipid = pid[instance]
+            row_delete = []
+            for row in ipid:
+                ripid = ipid[row]
+                if ripid['TLDAT'] == None:
+                    row_delete.append(row)
+                    rsg = '该行无'
+            if len(row_delete) > 0:
+                for dr in row_delete:
+                    ipid.pop(dr)
 
     return
 
@@ -108,11 +194,13 @@ if __name__ == "__main__":
         keys3 = findkeyscolumn(ws3, keys3list)
         keys4 = findkeyscolumn(ws4, keys4list)
 
-        data_ws1 = data1(ws1, keys1)
-        data_ws2 = data2(ws2, keys2)
-        data_ws3 = data3(ws3, keys3)
-        data_ws4 = data4(ws4, keys4)
+        data_ws1 = data(ws1, keys1)
+        data_ws2 = data(ws2, keys2)
+        data_ws3 = data(ws3, keys3)
+        data_ws4 = data(ws4, keys4)
         
+        # data_ws1 = data(ws1, keys1)
+
         bbzcheck(data_ws1, data_ws4, ws1)
         fbbzcheck(data_ws2, data_ws4, ws2)
         xbzcheck(data_ws3, data_ws4, ws3)
