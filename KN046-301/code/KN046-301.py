@@ -125,28 +125,125 @@ def data(ws, keys):
 
         for key in tmp_keys:
             data_ws[Subject][InstanceName][row].update({key:ws[tmp_keys[key]+str(row)].value})
+
+        # data_ws[Subject][InstanceName][row].update({'messaged':False})
     return data_ws
 
 
-def bbzcheck(data_ws1, data_ws4, ws1):
-    ws1.insert_cols(1)
-    ws1['A1'].value = '靶病灶检查结果'
-
+def bbzpretriage(data_ws1, data_ws4, ws1):
+    id_delete = set()
     for id in data_ws1:
         pid = data_ws1[id]
+        instance_delete = set()
         for instance in pid:
             ipid = pid[instance]
             row_delete = []
             for row in ipid:
+                msg = ''
                 ripid = ipid[row]
-                if ripid['TLDAT'] == None:
-                    row_delete.append(row)
-                    rsg = '该行无'
+                if exist(id, data_ws4):
+                    pid_ws4 = data_ws4[id]
+                    if exist(instance, pid_ws4):
+                        ipid_ws4 = pid_ws4[instance]
+                        if ripid['[TLYN]'] == '否':
+                            for row_ws4 in ipid_ws4:
+                                ripid_ws4 = ipid_ws4[row_ws4]
+                            if ripid_ws4['[RSYN]'] == '否' or 'NA' in ripid_ws4['[TRGRESP]']:
+                                rsg = 'Info:该行靶病灶评估为否，在Recist页面存在RSYN为否或TRGRESP为NA'
+                                msg = message(msg, rsg)
+                            else:
+                                rsg = 'Error:该受试者 {0} 在访视 {1} 中靶病灶评估为否，但在Recist页面RSYN不为否或TRGRESP不为NA'.format(id, instance)
+                                msg = message(msg, rsg)
+                            row_delete.append(row)
+                        elif ripid['[TLYN]'] == None:
+                            rsg = 'Error:该行靶病灶评估为空'
+                            msg = message(msg, rsg)
+                            row_delete.append(row)
+                    else:
+                        if '筛选期' not in instance:
+                            rsg = 'Error:该受试者在Recist页面无访视 {} 信息'.format(instance)
+                            msg = message(msg, rsg)
+                            instance_delete.add(instance)
+                else:
+                    rsg = 'Error:该受试者 {} 在Recist页面不存在'.format(id)
+                    msg = message(msg, rsg)
+                    id_delete.add(id)
+                    
+                mark(ws1, 'A', row, msg)        
+
             if len(row_delete) > 0:
-                for dr in row_delete:
-                    ipid.pop(dr)
+                for row in row_delete:
+                    ipid.pop(row)
+
+            if len(ipid) == 0:
+                instance_delete.add(instance)
+        
+        if len(instance_delete) > 0:
+            for instance in instance_delete:
+                pid.pop(instance)
+
+        if len(pid) == 0:
+            id_delete.add(id)
+    
+    if len(id_delete) > 0:
+        for id in id_delete:
+            data_ws1.pop(id)
+
+    return data_ws1
+
+
+def pid_revert(pid):
+    pid_normal = {}
+    pid_cc = {}
+    for instance in pid:
+        rows = []
+        if 'CC' in instance or 'cc' in instance:
+            pid_cc.setdefault(instance, {})
+            
+            for row in pid[instance]:
+                rows.append(row)
+                for key in pid[instance][row]:
+                    pid_cc[instance].setdefault(key, pid[instance][row][key])
+            pid_cc[instance].setdefault('rows',rows)
+
+        else:
+            pid_normal.setdefault(instance, {})
+            for row in pid[instance]:
+                rows.append(row)
+                for key in pid[instance][row]:
+                    pid_normal[instance].setdefault(key, pid[instance][row][key])
+            pid_normal[instance].setdefault('rows',rows)
+
+    return pid_normal, pid_cc
+
+def bbzpidcheck(pid_ws1_ori, pid_ws4_ori, ws1):
+    pid_ws1 = deepcopy(pid_ws1_ori)
+    pid_ws4 = deepcopy(pid_ws4_ori)
+    
+    pid_normal, pid_cc = pid_revert(pid_ws1)
+
+    for instance in pid_normal:
+        ####################################################
+        
+    return 
+
+def bbzcheck(data_ws1_ori, data_ws4, ws1):
+    ws1.insert_cols(1)
+    ws1['A1'].value = '靶病灶检查结果'
+
+    data_ws1 = deepcopy(data_ws1_ori)  
+
+    data_ws1 = bbzpretriage(data_ws1, data_ws4, ws1)
+
+    for id in data_ws1:
+        pid_ws1 = data_ws1[id]
+        pid_ws4 = data_ws4[id]
+        bbzpidcheck(pid_ws1, pid_ws4, ws1)
 
     return
+
+
+
 
 
 def fbbzcheck(data_ws2, data_ws4, ws2):
