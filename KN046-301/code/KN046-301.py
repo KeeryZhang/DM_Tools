@@ -204,7 +204,7 @@ def bbzpidresult(pid_sorted, pid_ws4):
             result = bbzresult(instance, crossbase, crosschecklist, crossinstancelist)
             for row_ws4 in pid_ws4[instance]:
                 if result in pid_ws4[instance][row_ws4]['[TRGRESP]']:
-                    rsg = 'Info:该行靶病灶杰作匹配成功'
+                    rsg = 'Info:该行靶病灶结果匹配成功'
                 elif result == '0':
                     rsg = 'Warn:此次检测数值为零，需提供说明'
                 else:
