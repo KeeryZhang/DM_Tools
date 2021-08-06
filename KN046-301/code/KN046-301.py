@@ -11,96 +11,12 @@ from copy import deepcopy
 
 sys.path.append("..\..")
 
-from tool_lib.utils import mark, findkeyscolumn, exist, message, parse_dmy
+from tool_lib.utils import mark, findkeyscolumn, exist, message
 
 keys1list = [r'{change}', '[Subject]', '[InstanceName]', '[TLYN]', '[TLDIAT]', '[TLDAT]', '[TLMETHOD]', '[TLLNKID]']
 keys2list = [r'{change}', '[Subject]', '[InstanceName]', '[NTLYN]', '[NTLDAT]', '[NTLORRES]', '[NTLLNKID]', '[NTLMTHOD]']
 keys3list = [r'{change}', '[Subject]', '[InstanceName]', '[NWTLEYN]']
 keys4list = [r'{change}', '[Subject]', '[InstanceName]', '[RSYN]', '[RSDAT]', '[TRGRESP]', '[NTRGRESP]', '[NEWLIND]']
-
-
-# def data1(ws, keys):
-#     data_ws = {}
-#     for row in range(2, ws.max_row+1):
-#         if ws[keys[r'{change}']+str(row)].value == 'deleted':
-#             continue
-#         if ws[keys['[Subject]']+str(row)].value == None:
-#             continue
-
-#         Subject = ws[keys['[Subject]']+str(row)].value
-#         InstanceName = ws[keys['[InstanceName]']+str(row)].value
-#         TLYN = ws[keys['[TLYN]']+str(row)].value
-#         TLDIAT = ws[keys['[TLDIAT]']+str(row)].value
-#         TLDAT = ws[keys['[TLDAT]']+str(row)].value
-#         TLMETHOD = ws[keys['[TLMETHOD]']+str(row)].value
-#         TLLNKID = ws[keys['[TLLNKID]']+str(row)].value
-        
-#         data_ws.setdefault(Subject, {})
-#         data_ws[Subject].setdefault(InstanceName, {})
-#         data_ws[Subject][InstanceName].setdefault(row, {'TLYN':TLYN, 'TLDIAT':TLDIAT, 'TLDAT':TLDAT, 'TLMETHOD':TLMETHOD, 'TLLNKID':TLLNKID})
-#     return data_ws
-
-
-# def data2(ws, keys):
-#     data_ws = {}
-#     for row in range(2, ws.max_row+1):
-#         if ws[keys[r'{change}']+str(row)].value == 'deleted':
-#             continue
-#         if ws[keys['[Subject]']+str(row)].value == None:
-#             continue
-
-#         Subject = ws[keys['[Subject]']+str(row)].value
-#         InstanceName = ws[keys['[InstanceName]']+str(row)].value
-#         NTLYN = ws[keys['[NTLYN]']+str(row)].value
-#         NTLDAT = ws[keys['[NTLDAT]']+str(row)].value
-#         NTLORRES = ws[keys['[NTLORRES]']+str(row)].value
-#         NTLLNKID = ws[keys['[NTLLNKID]']+str(row)].value
-#         NTLMTHOD = ws[keys['[NTLMTHOD]']+str(row)].value
-        
-#         data_ws.setdefault(Subject, {})
-#         data_ws[Subject].setdefault(InstanceName, {})
-#         data_ws[Subject][InstanceName].setdefault(row, {'NTLYN':NTLYN, 'NTLDAT':NTLDAT, 'NTLORRES':NTLORRES, 'NTLLNKID':NTLLNKID, 'NTLMTHOD':NTLMTHOD})
-#     return data_ws
-
-
-# def data3(ws, keys):
-#     data_ws = {}
-#     for row in range(2, ws.max_row+1):
-#         if ws[keys[r'{change}']+str(row)].value == 'deleted':
-#             continue
-#         if ws[keys['[Subject]']+str(row)].value == None:
-#             continue
-
-#         Subject = ws[keys['[Subject]']+str(row)].value
-#         InstanceName = ws[keys['[InstanceName]']+str(row)].value
-#         NWTLEYN = ws[keys['[NWTLEYN]']+str(row)].value
-        
-#         data_ws.setdefault(Subject, {})
-#         data_ws[Subject].setdefault(InstanceName, {})
-#         data_ws[Subject][InstanceName].setdefault(row, {'NWTLEYN':NWTLEYN})
-#     return data_ws
-
-
-# def data4(ws, keys):
-#     data_ws = {}
-#     for row in range(2, ws.max_row+1):
-#         if ws[keys[r'{change}']+str(row)].value == 'deleted':
-#             continue
-#         if ws[keys['[Subject]']+str(row)].value == None:
-#             continue
-
-#         Subject = ws[keys['[Subject]']+str(row)].value
-#         InstanceName = ws[keys['[InstanceName]']+str(row)].value
-#         RSYN = ws[keys['[RSYN]']+str(row)].value
-#         RSDAT = ws[keys['[RSDAT]']+str(row)].value
-#         TRGRESP = ws[keys['[TRGRESP]']+str(row)].value
-#         NTRGRESP = ws[keys['[NTRGRESP]']+str(row)].value
-#         NEWLIND = ws[keys['[NEWLIND]']+str(row)].value
-        
-#         data_ws.setdefault(Subject, {})
-#         data_ws[Subject].setdefault(InstanceName, {})
-#         data_ws[Subject][InstanceName].setdefault(row, {'RSYN':RSYN, 'RSDAT':RSDAT, 'TRGRESP':TRGRESP, 'NTRGRESP':NTRGRESP, 'NEWLIND':NEWLIND})
-#     return data_ws
 
 
 def data(ws, keys):
@@ -216,15 +132,61 @@ def pid_revert(pid):
 
     return pid_normal, pid_cc
 
+
+def bbzresult(InstanceName, crossbase, crosschecklist, crossinstancelist):
+    index = crossinstancelist.index(InstanceName)
+    check = crosschecklist[index]
+    checklist = crosschecklist[:index+1]
+    checklist.append(crossbase)
+    TMASPD_min = min(checklist)
+    zerocheck = True
+    if TMASPD_min != 0:
+        PRcheck = (check - crossbase)/crossbase
+        PDcheck = (check - TMASPD_min)/TMASPD_min
+    else:
+        zerocheck = False
+        
+    if zerocheck:    
+        if PDcheck >= 0.2 and abs(check - TMASPD_min) >= 5:
+            result = 'PD'
+        elif abs(PRcheck) >= 0.3:
+            result = 'PR'
+        else:
+            result = 'SD'
+    else:
+        result = '0'
+    return result
+
+    
 def bbzpidcheck(pid_ws1_ori, pid_ws4_ori, ws1):
     pid_ws1 = deepcopy(pid_ws1_ori)
     pid_ws4 = deepcopy(pid_ws4_ori)
     
     pid_normal, pid_cc = pid_revert(pid_ws1)
 
-    for instance in pid_normal:
-        ####################################################
-        
+    if pid_normal != {}:
+        pid_normal = sorted(pid_normal.items(), key = lambda time:time[1]['[TLDAT]'])
+
+        for i in range(0, len(pid_normal)):
+            instance = pid_normal[i][0]
+            p_ws1 = pid_normal[i][1]
+            msg = ''
+            if '筛选期' in instance:
+                rsg = 'Info:该行为筛选期，跳过比较'
+                msg = message(msg, rsg)
+            else:
+                if 
+
+            for row in p_ws1['rows']:
+                mark(ws1, 'A', row, msg)
+
+            ####################################################
+
+    if pid_cc != {}:
+        pid_cc = sorted(pid_cc.items(), key = lambda time:time[1]['[TLDAT]'])
+
+        for i in range(0, len(pid_cc)):
+            pass    
     return 
 
 def bbzcheck(data_ws1_ori, data_ws4, ws1):
