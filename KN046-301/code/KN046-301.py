@@ -2,6 +2,7 @@
 # -*- coding:UTF-8 -*-
 
 import openpyxl
+from openpyxl.descriptors import base
 from openpyxl.utils import get_column_letter, column_index_from_string
 from datetime import datetime
 import os
@@ -42,7 +43,6 @@ def data(ws, keys):
         for key in tmp_keys:
             data_ws[Subject][InstanceName][row].update({key:ws[tmp_keys[key]+str(row)].value})
 
-        # data_ws[Subject][InstanceName][row].update({'messaged':False})
     return data_ws
 
 
@@ -295,7 +295,7 @@ def fbbzpidcheck(pid_ws2_ori, pid_ws4_ori, ws2):
 
 def fbbzcheck(data_ws2_ori, data_ws4, ws2):
     ws2.insert_cols(1)
-    ws2['A1'].value = '靶病灶检查结果'
+    ws2['A1'].value = '非靶病灶检查结果'
 
     data_ws2 = deepcopy(data_ws2_ori)  
 
@@ -337,7 +337,7 @@ def xbzpidcheck(pid_ws3, pid_ws4, ws3):
 
 def xbzcheck(data_ws3_ori, data_ws4, ws3):
     ws3.insert_cols(1)
-    ws3['A1'].value = '靶病灶检查结果'
+    ws3['A1'].value = '新病灶检查结果'
 
     data_ws3 = deepcopy(data_ws3_ori)  
 
@@ -350,8 +350,93 @@ def xbzcheck(data_ws3_ori, data_ws4, ws3):
     return
 
 
-def methodcheck(data_ws, ws):
+def methodpretriage(data_ws, ws, TU):
+    if TU == '靶病灶':
+        idname = '[TLLNKID]'
+        method = '[TLMETHOD]'
+    else:
+        idname = '[NTLLNKID]'
+        method = '[NTLMTHOD]'
 
+    data_ws_normal_revert = {}
+    data_ws_cc_revert = {}
+    for id in data_ws:
+        pid = data_ws[id]
+        for instance in pid:
+            ipid = pid[instance]
+            row_delete = []
+            for row in ipid:
+                msg = ''
+                rsg = ''
+                ripid = ipid[row]
+                if ripid[idname] == None and ripid[method] == None:
+                    rsg = 'Error:该行无{}编号且检查方法为空'.format(TU)
+                    row_delete.append(row)
+                elif ripid[idname] == None:
+                    rsg = 'Error:该行无{}编号'.format(TU)
+                    row_delete.append(row)
+                elif ripid[method] == None:
+                    rsg = 'Error:该行{}检查方法为空'.format(TU)
+                    row_delete.append(row)
+                else:
+                    if 'CC' in instance or 'cc' in instance:
+                        data_ws_cc_revert.setdefault(id, {})
+                        data_ws_cc_revert[id].setdefault(ripid[idname], [])
+                        if '筛选期' in instance:
+                            data_ws_cc_revert[id][ripid[idname]].insert(0, (row, ripid[method], instance))
+                        else:
+                            data_ws_cc_revert[id][ripid[idname]].append((row, ripid[method], instance))
+                    else:
+                        data_ws_normal_revert.setdefault(id, {})
+                        data_ws_normal_revert[id].setdefault(ripid[idname], [])
+                        if '筛选期' in instance:
+                            data_ws_normal_revert[id][ripid[idname]].insert(0, (row, ripid[method], instance))
+                        else:
+                            data_ws_normal_revert[id][ripid[idname]].append((row, ripid[method], instance))
+                msg = message(msg, rsg)
+                mark(ws, 'A', row, msg)
+                     
+
+    return data_ws_normal_revert, data_ws_cc_revert
+
+
+def methodprocess(data_ws, ws, TU):
+    for id in data_ws:
+        pid = data_ws[id]
+        for idname in pid:
+            ipid = pid[idname]
+            hasbase = False
+            if '筛选期' in ipid[0][2]:
+                checkbase = ipid[0][1]
+                for i in range(0, len(ipid)):
+                    msg = ''
+                    if '筛选期' in ipid[i][2]:
+                        rsg = 'Info:该行为受试者病灶编号{}筛选期，作为对比基准'.format(idname)
+                    else:
+                        if ipid[i][1] == checkbase:
+                            rsg = 'Info:该行检测方法与筛选期一致'
+                        else:
+                            rsg = 'Error:该行检测方法为 {}，筛选期检测方法为 {}，匹配失败'.format(ipid[i][1], checkbase)
+                    msg = message(msg, rsg)
+                    mark(ws, 'A', ipid[i][0], msg)
+            else:
+                msg = ''
+                rsg = 'Error:该受试者病灶编号{}无筛选期检查，无法进行对比'.format(idname)
+                msg = message(msg, rsg)
+                for i in range(0, len(ipid)):
+                    mark(ws, 'A', ipid[i][0], msg)
+    return
+
+def methodcheck(data_ws_ori, ws, TU):
+    ws.insert_cols(1)
+    ws['A1'].value = '检查方法对比结果'
+
+    data_ws = deepcopy(data_ws_ori)
+
+    data_normal, data_cc = methodpretriage(data_ws, ws, TU)
+
+    methodprocess(data_normal, ws, TU)
+    methodprocess(data_cc, ws, TU)
     return
 
 if __name__ == "__main__":
@@ -394,8 +479,8 @@ if __name__ == "__main__":
         fbbzcheck(data_ws2, data_ws4, ws2)
         xbzcheck(data_ws3, data_ws4, ws3)
 
-        methodcheck(data_ws1, ws1)
-        methodcheck(data_ws2, ws2)
+        methodcheck(data_ws1, ws1, '靶病灶')
+        methodcheck(data_ws2, ws2, '非靶病灶')
 
         wb.save(wbsavepath)
 
