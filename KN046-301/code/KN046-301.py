@@ -46,46 +46,65 @@ def data(ws, keys):
     return data_ws
 
 
-def bbzpretriage(data_ws1, data_ws4, ws1):
+def bbzpretriage(data_ws, data_ws4, ws, TU):
+    
     id_delete = set()
-    for id in data_ws1:
-        pid = data_ws1[id]
+    for id in data_ws:
+        pid = data_ws[id]
         instance_delete = set()
         for instance in pid:
             ipid = pid[instance]
             row_delete = []
             for row in ipid:
                 msg = ''
+                rsg = ''
                 ripid = ipid[row]
                 if exist(id, data_ws4):
                     pid_ws4 = data_ws4[id]
                     if exist(instance, pid_ws4):
                         ipid_ws4 = pid_ws4[instance]
-                        if ripid['[TLYN]'] == '否':
+                        if TU == '靶病灶' and ripid['[TLYN]'] == '否':
                             for row_ws4 in ipid_ws4:
                                 ripid_ws4 = ipid_ws4[row_ws4]
                             if ripid_ws4['[RSYN]'] == '否' or 'NA' in ripid_ws4['[TRGRESP]']:
-                                rsg = 'Info:该行靶病灶评估为否，在Recist页面存在RSYN为否或TRGRESP为NA'
-                                msg = message(msg, rsg)
+                                rsg = 'Info:该行{}评估为否，在Recist页面存在RSYN为否或TRGRESP为NA'.format(TU)                                
                             else:
-                                rsg = 'Error:该受试者 {0} 在访视 {1} 中靶病灶评估为否，但在Recist页面RSYN不为否或TRGRESP不为NA'.format(id, instance)
-                                msg = message(msg, rsg)
+                                rsg = 'Error:该受试者 {0} 在访视 {1} 中{2}评估为否，但在Recist页面RSYN不为否或TRGRESP不为NA'.format(id, instance, TU)
                             row_delete.append(row)
-                        elif ripid['[TLYN]'] == None:
-                            rsg = 'Error:该行靶病灶评估为空'
-                            msg = message(msg, rsg)
+                        elif TU == '靶病灶' and ripid['[TLYN]'] == None:
+                            rsg = 'Error:该行{}评估为空'.format(TU)                            
+                            row_delete.append(row)
+
+                        if TU == '非靶病灶' and ripid['[NTLYN]'] == '否':
+                            for row_ws4 in ipid_ws4:
+                                ripid_ws4 = ipid_ws4[row_ws4]
+                            if ripid_ws4['[NTRGRESP]'] == '基线无非靶病灶':
+                                rsg = 'Info:该行{}评估为否，对应Recist页面中基线无非靶病灶'.format(TU)
+                            else:
+                                rsg = 'Error:该受试者 {0} 在访视 {1} 中{2}评估为否，但在Recist页面NTRGRESP不为基线无非靶病灶'.format(id, instance, TU)
+                            row_delete.append(row)
+                        elif TU == '非靶病灶' and ripid['[NTLYN]'] == None:
+                            rsg = 'Error:该行{}评估为空'.format(TU)
+                            row_delete.append(row)
+
+                        if TU == '新病灶' and ripid['[NWTLEYN]'] == None:
+                            rsg = 'Error:该行{}评估为空'.format(TU)
                             row_delete.append(row)
                     else:
                         if '筛选期' not in instance:
                             rsg = 'Error:该受试者在Recist页面无访视 {} 信息'.format(instance)
-                            msg = message(msg, rsg)
+                            instance_delete.add(instance)
+                        elif TU == '非靶病灶' and '筛选期' in instance:
+                            rsg = 'Info:筛选期无Recist对应记录'
                             instance_delete.add(instance)
                 else:
-                    rsg = 'Error:该受试者 {} 在Recist页面不存在'.format(id)
-                    msg = message(msg, rsg)
+                    if '筛选期' not in instance:
+                        rsg = 'Error:该受试者在Recist页面不存在'                       
+                    else:
+                        rsg = 'Info:该受试者处于筛选期在Recist页面不存在'
                     id_delete.add(id)
-                    
-                mark(ws1, 'A', row, msg)        
+                msg = message(msg, rsg)
+                mark(ws, 'A', row, msg)        
 
             if len(row_delete) > 0:
                 for row in row_delete:
@@ -103,9 +122,9 @@ def bbzpretriage(data_ws1, data_ws4, ws1):
     
     if len(id_delete) > 0:
         for id in id_delete:
-            data_ws1.pop(id)
+            data_ws.pop(id)
 
-    return data_ws1
+    return data_ws
 
 
 def pid_revert(pid):
@@ -138,16 +157,16 @@ def bbzresult(InstanceName, crossbase, crosschecklist, crossinstancelist):
     check = crosschecklist[index]
     checklist = crosschecklist[:index+1]
     checklist.append(crossbase)
-    TMASPD_min = min(checklist)
+    TLDIAT_min = min(checklist)
     zerocheck = True
-    if TMASPD_min != 0:
+    if TLDIAT_min != 0:
         PRcheck = (check - crossbase)/crossbase
-        PDcheck = (check - TMASPD_min)/TMASPD_min
+        PDcheck = (check - TLDIAT_min)/TLDIAT_min
     else:
         zerocheck = False
         
     if zerocheck:    
-        if PDcheck >= 0.2 and abs(check - TMASPD_min) >= 5:
+        if PDcheck >= 0.2 and abs(check - TLDIAT_min) >= 5:
             result = 'PD'
         elif abs(PRcheck) >= 0.3:
             result = 'PR'
@@ -158,6 +177,43 @@ def bbzresult(InstanceName, crossbase, crosschecklist, crossinstancelist):
     return result
 
     
+def bbzpidresult(pid_sorted, pid_ws4):
+    crossbase = int()
+    crosschecklist = list()
+    crossinstancelist = list()
+    for i in range(0, len(pid_sorted)):
+        instance = pid_sorted[i][0]
+        p_ws1 = pid_sorted[i][1]
+        TLDIAT = p_ws1['[TLDIAT]']
+        if '筛选期' in instance:
+            crossbase = TLDIAT                
+        else:
+            crosschecklist.append(TLDIAT)
+            crossinstancelist.append(instance) 
+
+    for i in range(0, len(pid_sorted)):
+        instance = pid_sorted[i][0]
+        p_ws1 = pid_sorted[i][1]
+        TLDIAT = p_ws1['[TLDIAT]']
+        msg = ''
+        rsg = ''
+        if '筛选期' in instance:
+            crossbase = TLDIAT
+            rsg = 'Info:该行为筛选期，跳过比较'
+        else:
+            result = bbzresult(instance, crossbase, crosschecklist, crossinstancelist)
+            for row_ws4 in pid_ws4[instance]:
+                if result in pid_ws4[instance][row_ws4]['[TRGRESP]']:
+                    rsg = 'Info:该行靶病灶杰作匹配成功'
+                elif result == '0':
+                    rsg = 'Warn:此次检测数值为零，需提供说明'
+                else:
+                    rsg = 'Error:该行靶病灶结果应为 {}，与Recist页面第 {} 行匹配失败'.format(result, row_ws4)
+        msg = message(msg, rsg)
+        for row in p_ws1['rows']:
+            mark(ws1, 'A', row, msg)
+
+
 def bbzpidcheck(pid_ws1_ori, pid_ws4_ori, ws1):
     pid_ws1 = deepcopy(pid_ws1_ori)
     pid_ws4 = deepcopy(pid_ws4_ori)
@@ -166,28 +222,13 @@ def bbzpidcheck(pid_ws1_ori, pid_ws4_ori, ws1):
 
     if pid_normal != {}:
         pid_normal = sorted(pid_normal.items(), key = lambda time:time[1]['[TLDAT]'])
-
-        for i in range(0, len(pid_normal)):
-            instance = pid_normal[i][0]
-            p_ws1 = pid_normal[i][1]
-            msg = ''
-            if '筛选期' in instance:
-                rsg = 'Info:该行为筛选期，跳过比较'
-                msg = message(msg, rsg)
-            else:
-                if 
-
-            for row in p_ws1['rows']:
-                mark(ws1, 'A', row, msg)
-
-            ####################################################
-
+        bbzpidresult(pid_normal, pid_ws4)
+            
     if pid_cc != {}:
         pid_cc = sorted(pid_cc.items(), key = lambda time:time[1]['[TLDAT]'])
-
-        for i in range(0, len(pid_cc)):
-            pass    
+        bbzpidresult(pid_cc, pid_ws4)   
     return 
+
 
 def bbzcheck(data_ws1_ori, data_ws4, ws1):
     ws1.insert_cols(1)
@@ -195,7 +236,7 @@ def bbzcheck(data_ws1_ori, data_ws4, ws1):
 
     data_ws1 = deepcopy(data_ws1_ori)  
 
-    data_ws1 = bbzpretriage(data_ws1, data_ws4, ws1)
+    data_ws1 = bbzpretriage(data_ws1, data_ws4, ws1, '靶病灶')
 
     for id in data_ws1:
         pid_ws1 = data_ws1[id]
@@ -205,16 +246,107 @@ def bbzcheck(data_ws1_ori, data_ws4, ws1):
     return
 
 
+def fbbzresult(ipid):
+    NTLORRES_set = set()
+    result = ''
+    for row_ws2 in ipid:
+        ripid_ws2 = ipid[row_ws2]
+        NTLORRES_set.add(ripid_ws2['[NTLORRES]'])
+    if '明确的进展' in NTLORRES_set:
+        result = 'PD'
+    elif '可见' in NTLORRES_set:
+        result = r'非CR/非PD'
+    elif '不能评估' in NTLORRES_set:
+        result = 'NE'
+    elif len(NTLORRES_set) > 0 and len(NTLORRES_set.union({'不可见'})) == 1:
+        result = 'CR'
+    elif len(NTLORRES_set) == 0:
+        result = '0'
+    return result
 
 
+def fbbzpidcheck(pid_ws2_ori, pid_ws4_ori, ws2):
+    pid_ws2 = deepcopy(pid_ws2_ori)
+    pid_ws4 = deepcopy(pid_ws4_ori)
+    
+    for instance in pid_ws2:
+        ipid_ws2 = pid_ws2[instance]
+        ipid_ws4 = pid_ws4[instance]
+        result = fbbzresult(ipid_ws2)
+        msg = ''
+        rsg = ''
+        for row_ws4 in ipid_ws4:
+            ripid_ws4 = ipid_ws4[row_ws4]
+            if result in ripid_ws4['[NTRGRESP]']:
+                rsg = 'Info:该行结果与非靶病灶匹配成功'
+            elif result == '0':
+                rsg = 'Error:该行非靶病灶评估为空'
+            else:
+                rsg = 'Error:该行非靶病灶结果应为 {} ，Recist结果为 {} ，与本行匹配失败'.format(result, ripid_ws4['[NTRGRESP]'])
+        msg = message(msg, rsg)
 
-def fbbzcheck(data_ws2, data_ws4, ws2):
-
+        for row_ws2 in ipid_ws2:
+            ripid_ws2 = ipid_ws2[row_ws2]
+            if ripid_ws2['[NTLORRES]'] == None:
+                msg = 'Error:该行非靶病灶评估为空'
+            mark(ws2, 'A', row_ws2, msg)
     return
 
 
-def xbzcheck(data_ws3, data_ws4, ws3):
+def fbbzcheck(data_ws2_ori, data_ws4, ws2):
+    ws2.insert_cols(1)
+    ws2['A1'].value = '靶病灶检查结果'
 
+    data_ws2 = deepcopy(data_ws2_ori)  
+
+    data_ws2 = bbzpretriage(data_ws2, data_ws4, ws2, '非靶病灶')
+
+    for id in data_ws2:
+        pid_ws2 = data_ws2[id]
+        pid_ws4 = data_ws4[id]
+        fbbzpidcheck(pid_ws2, pid_ws4, ws2)
+    return
+
+
+def xbzpidcheck(pid_ws3, pid_ws4, ws3):
+    for instance in pid_ws3:
+        ipid_ws3 = pid_ws3[instance]
+        ipid_ws4 = pid_ws4[instance]
+        for row_ws3 in ipid_ws3:
+            msg = ''
+            rsg = ''
+            ismatch = False
+            ripid_ws3 = ipid_ws3[row_ws3]
+            for row_ws4 in ipid_ws4:
+                ripid_ws4 = ipid_ws4[row_ws4]
+            if ripid_ws3['[NWTLEYN]'] == '是':
+                if ripid_ws4['[NEWLIND]'] == '有':
+                    ismatch = True
+            elif ripid_ws3['[NWTLEYN]'] == '否':
+                if ripid_ws4['[NEWLIND]'] == '无':
+                    ismatch = True
+            
+            if ismatch:
+                rsg = 'Info:该行结果与新病灶匹配成功'
+            else:
+                rsg = 'Error:该行新病灶结果应为 {} ，Recist结果为 {} ，与本行匹配失败'.format(ripid_ws3['[NWTLEYN]'], ripid_ws4['[NEWLIND]'])
+            msg = message(msg, rsg)
+            mark(ws3, 'A', row_ws3, msg)
+    return
+
+
+def xbzcheck(data_ws3_ori, data_ws4, ws3):
+    ws3.insert_cols(1)
+    ws3['A1'].value = '靶病灶检查结果'
+
+    data_ws3 = deepcopy(data_ws3_ori)  
+
+    data_ws3 = bbzpretriage(data_ws3, data_ws4, ws3, '新病灶')
+
+    for id in data_ws3:
+        pid_ws3 = data_ws3[id]
+        pid_ws4 = data_ws4[id]
+        xbzpidcheck(pid_ws3, pid_ws4, ws3)
     return
 
 
@@ -258,8 +390,6 @@ if __name__ == "__main__":
         data_ws3 = data(ws3, keys3)
         data_ws4 = data(ws4, keys4)
         
-        # data_ws1 = data(ws1, keys1)
-
         bbzcheck(data_ws1, data_ws4, ws1)
         fbbzcheck(data_ws2, data_ws4, ws2)
         xbzcheck(data_ws3, data_ws4, ws3)
