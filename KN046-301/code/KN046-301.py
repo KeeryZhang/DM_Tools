@@ -132,15 +132,14 @@ def pid_revert(pid):
     pid_cc = {}
     for instance in pid:
         rows = []
+        rows_cc = []
         if 'CC' in instance or 'cc' in instance:
             pid_cc.setdefault(instance, {})
-            
             for row in pid[instance]:
-                rows.append(row)
+                rows_cc.append(row)
                 for key in pid[instance][row]:
                     pid_cc[instance].setdefault(key, pid[instance][row][key])
-            pid_cc[instance].setdefault('rows',rows)
-
+            pid_cc[instance].setdefault('rows',rows_cc)
         else:
             pid_normal.setdefault(instance, {})
             for row in pid[instance]:
