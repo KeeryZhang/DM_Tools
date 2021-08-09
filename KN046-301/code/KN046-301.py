@@ -353,9 +353,11 @@ def methodpretriage(data_ws, ws, TU):
     if TU == '靶病灶':
         idname = '[TLLNKID]'
         method = '[TLMETHOD]'
+        ifcheck = '[TLYN]'
     else:
         idname = '[NTLLNKID]'
         method = '[NTLMTHOD]'
+        ifcheck = '[NTLYN]'
 
     data_ws_normal_revert = {}
     data_ws_cc_revert = {}
@@ -368,7 +370,10 @@ def methodpretriage(data_ws, ws, TU):
                 msg = ''
                 rsg = ''
                 ripid = ipid[row]
-                if ripid[idname] == None and ripid[method] == None:
+                if ripid[ifcheck] == '否':
+                    rsg = 'Info:该行不进行{}评估'.format(TU)
+                    row_delete.append(row)
+                elif ripid[idname] == None and ripid[method] == None:
                     rsg = 'Error:该行无{}编号且检查方法为空'.format(TU)
                     row_delete.append(row)
                 elif ripid[idname] == None:
@@ -376,7 +381,7 @@ def methodpretriage(data_ws, ws, TU):
                     row_delete.append(row)
                 elif ripid[method] == None:
                     rsg = 'Error:该行{}检查方法为空'.format(TU)
-                    row_delete.append(row)
+                    row_delete.append(row)                
                 else:
                     if 'CC' in instance or 'cc' in instance:
                         data_ws_cc_revert.setdefault(id, {})
