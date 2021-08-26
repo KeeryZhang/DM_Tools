@@ -445,7 +445,7 @@ def methodcheck(data_ws_ori, ws, TU):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cancer", default=r'KN046-301_肿瘤评估_20210803.xlsx', help="Please add AE file name")
+    parser.add_argument("--cancer", default=r'KN046-301_肿瘤评估_20210826.xlsx', help="Please add AE file name")
     parser.add_argument("--bbz", default=r'TUTL|肿瘤评价-靶病灶（RECIST 1.1）', help="Please set sheet name of ae")
     parser.add_argument("--fbbz", default=r'TUNTL|肿瘤评价-非靶病灶（RECIST 1.1）', help="Please set sheet name of cb")
     parser.add_argument("--xbz", default=r'TUNEWTL|肿瘤评价-新病灶（RECIST 1.1）', help="Please set sheet name of cb")
