@@ -38,6 +38,11 @@ def findkeyscolumn(ws, keyslist):
                 keys.setdefault(key, row_letter)
                 keyslist.remove(key)
                 break
+    
+    for key in keys:
+        if keys[key] == None:
+            keys.pop(key)
+            
     return keys
 
 
