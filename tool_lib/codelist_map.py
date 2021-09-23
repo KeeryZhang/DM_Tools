@@ -52,10 +52,9 @@ if __name__ == "__main__":
 
     wb.close()
     
-    with open("outs\Codelist_map.py", 'w+') as f:
+    with open("outs\Codelist_map.py", 'w', encoding="utf-8") as f:
         f.write('Codelist_map = ' + pprint.pformat(Codelist_map) + '\n\n')
         f.write('Codelist_map_plus = ' + pprint.pformat(Codelist_map_plus) + '\n\n')
         f.write('Codelist_map_minus = ' + pprint.pformat(Codelist_map_minus) + '\n\n')
         f.write('Codelist_map_nosymbol = ' + pprint.pformat(Codelist_map_nosymbol) + '\n\n')
-        f.close()
     

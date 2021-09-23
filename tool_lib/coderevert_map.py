@@ -38,6 +38,6 @@ for AE_PT in Coderevert_map_withsymbol:
 
 
 
-with open('outs\Coderevert_map.py', 'w') as f:
+with open('outs\Coderevert_map.py', 'w', encoding="utf-8") as f:
     f.write('Coderevert_map_withsymbol = ' + pprint.pformat(Coderevert_map_withsymbol) + '\n\n')
     f.write('Coderevert_map_nosymbol = ' + pprint.pformat(Coderevert_map_nosymbol) + '\n\n')

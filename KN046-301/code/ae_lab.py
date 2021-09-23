@@ -196,65 +196,66 @@ def ae2lab(data_ws1, data_ws2, ws1):
     
     for id in data_ws1:
         pid = data_ws1[id]
-        for AE_PT in pid:
-            apid = pid[AE_PT]
-            if AE_PT in Coderevert_map:
-                AnalyteNames = Coderevert_map[AE_PT]
-            else:
-                AnalyteNames = None
-            for ST in apid:                
-                sapid = apid[ST]
-                # sortedsapid = sorted(sapid.items(), key = lambda time:time[1]['GR'])
-                for row_ws1 in sapid:
-                    msg = ''
-                    if id not in data_ws2.keys():
-                        msg = 'Error:该患者在Lab页面无记录'
-                        mark(ws1, 'A', row_ws1, msg)
-                        continue
-                    pid_ws2 = data_ws2[id]
-                    
-                    AnalyteNamecheck = False
-                    if AnalyteNames == None:
-                        msg = 'Warn:该行不良事件{}无对应分析物，需手动核查'.format(AE_PT)
-                        mark(ws1, 'A', row_ws1, msg)
-                        continue
-                    for An_Flag in AnalyteNames:
-                        if An_Flag[0] in pid_ws2:
-                            AnalyteNamecheck = True
-                            apid_ws2 = pid_ws2[An_Flag[0]]
-                            STcheck = False
-                            GRcheck = False
-                            ENcheck = False
-                            GR = True
-                            EN = False
-                            # if row_ws1[1]['GR'] != datetime(1970, 1, 1):
-                            #     GR = True
-                            if sapid[row_ws1]['EN'] != datetime(1970, 1, 1):
-                                EN = True
-                            for row_ws2 in apid_ws2:
-                                rapid_ws2 = apid_ws2[row_ws2]
-                                if rapid_ws2['RecordDate'] == ST:
-                                    STcheck = True
-                                    msg = 'Info:该AE记录开始日期与Lab页面第{}行匹配成功'.format(row_ws2)
-                                # elif GR and rapid_ws2['RecordDate'] == row_ws1[1]['GR']:
-                                #     GRcheck = True
-                                #     msg = '\n'.join([msg, 'Info:该AE记录级别变化日期与Lab页面第{}行匹配成功'.format(row_ws2)])
-                                elif EN and rapid_ws2['RecordDate'] == sapid[row_ws1]['EN']:
-                                    ENcheck = True
-                                    msg = '\n'.join([msg, 'Info:该AE记录结束日期与Lab页面第{}行匹配成功'.format(row_ws2)])
-                            
-                            if not STcheck:
-                                msg = '\n'.join([msg, 'Error:该AE记录开始日期匹配失败'])
-                            if GR and not GRcheck:
-                                msg = '\n'.join([msg, 'Error:该AE记录级别变化日期匹配失败'])
-                            if EN and not ENcheck:
-                                msg = '\n'.join([msg, 'Error:该AE记录结束日期匹配失败'])
+        for AE_PT_list in pid:
+            apid = pid[AE_PT_list]
+            for AE_PT in AE_PT_list:
+                if AE_PT in Coderevert_map:
+                    AnalyteNames = Coderevert_map[AE_PT]
+                else:
+                    AnalyteNames = None
+                for ST in apid:                
+                    sapid = apid[ST]
+                    # sortedsapid = sorted(sapid.items(), key = lambda time:time[1]['GR'])
+                    for row_ws1 in sapid:
+                        msg = ''
+                        if id not in data_ws2.keys():
+                            msg = 'Error:该患者在Lab页面无记录'
                             mark(ws1, 'A', row_ws1, msg)
+                            continue
+                        pid_ws2 = data_ws2[id]
+                        
+                        AnalyteNamecheck = False
+                        if AnalyteNames == None:
+                            msg = 'Warn:该行不良事件{}无对应分析物，需手动核查'.format(AE_PT)
+                            mark(ws1, 'A', row_ws1, msg)
+                            continue
+                        for An_Flag in AnalyteNames:
+                            if An_Flag[0] in pid_ws2:
+                                AnalyteNamecheck = True
+                                apid_ws2 = pid_ws2[An_Flag[0]]
+                                STcheck = False
+                                GRcheck = False
+                                ENcheck = False
+                                GR = True
+                                EN = False
+                                # if row_ws1[1]['GR'] != datetime(1970, 1, 1):
+                                #     GR = True
+                                if sapid[row_ws1]['EN'] != datetime(1970, 1, 1):
+                                    EN = True
+                                for row_ws2 in apid_ws2:
+                                    rapid_ws2 = apid_ws2[row_ws2]
+                                    if rapid_ws2['RecordDate'] == ST:
+                                        STcheck = True
+                                        msg = 'Info:该AE记录开始日期与Lab页面第{}行匹配成功'.format(row_ws2)
+                                    # elif GR and rapid_ws2['RecordDate'] == row_ws1[1]['GR']:
+                                    #     GRcheck = True
+                                    #     msg = '\n'.join([msg, 'Info:该AE记录级别变化日期与Lab页面第{}行匹配成功'.format(row_ws2)])
+                                    elif EN and rapid_ws2['RecordDate'] == sapid[row_ws1]['EN']:
+                                        ENcheck = True
+                                        msg = '\n'.join([msg, 'Info:该AE记录结束日期与Lab页面第{}行匹配成功'.format(row_ws2)])
+                                
+                                if not STcheck:
+                                    msg = '\n'.join([msg, 'Error:该AE记录开始日期匹配失败'])
+                                if GR and not GRcheck:
+                                    msg = '\n'.join([msg, 'Error:该AE记录级别变化日期匹配失败'])
+                                if EN and not ENcheck:
+                                    msg = '\n'.join([msg, 'Error:该AE记录结束日期匹配失败'])
+                                mark(ws1, 'A', row_ws1, msg)
 
-                    if not AnalyteNamecheck:        
-                        msg = 'Error:该患者在Lab页面无{}对应检查项'.format(AE_PT)
-                        mark(ws1, 'A', row_ws1, msg)
-                        continue
+                        if not AnalyteNamecheck:        
+                            msg = 'Error:该患者在Lab页面无{}对应检查项'.format(AE_PT)
+                            mark(ws1, 'A', row_ws1, msg)
+                            continue
 
 def get_files():
     files_raw = os.listdir(SHEETS_PATH)
@@ -311,8 +312,9 @@ if __name__ == "__main__":
         ws2 = lab2ae(data_ws1, data_ws2, ws2)
         ws1 = ae2lab(data_ws1, data_ws2, ws1)
 
-        wb2.save(wb2savepath)
         wb1.save(wb1savepath)
+        wb2.save(wb2savepath)
+        
 
     finally:
         wb1.close()
