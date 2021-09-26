@@ -88,11 +88,11 @@ def lab2ae(data_ws1, data_ws2, ws2):
             apid = pid[AnalyteName]
             sortedapid = sorted(apid.items(), key = lambda time:time[1]['RecordDate'])
             AE_event = False
-            row_ws1 = None
+            raw_ws1 = None
             AETERM_PT = None
             for row_ws2 in sortedapid:
                 rs = row_ws2[1]
-                if rs['LabFlag'] in ['+', '-'] and rs['CS'] == 'Clinically Significant':
+                if rs['LabFlag'] in ['+', '-'] and rs['CS'] == '异常有临床意义':
                     if id not in data_ws1.keys():
                         msg = 'Error:该患者在AE页面无记录'
                         mark(ws2, 'A', row_ws2[0], msg)
@@ -107,9 +107,12 @@ def lab2ae(data_ws1, data_ws2, ws2):
                         codelist = Codelist_map[(AnalyteName, rs['LabFlag'])]
                         codecheck = False
                         for code in codelist:
-                            if code in data_ws1[id]:
-                                codecheck = True
-                                AETERM_PT = code
+                            for subcode in data_ws1[id]:
+                                if code in subcode:
+                                    codecheck = True
+                                    AETERM_PT = subcode
+                                    break
+                            if codecheck:
                                 break
                         
                         if not codecheck:
@@ -123,26 +126,26 @@ def lab2ae(data_ws1, data_ws2, ws2):
                             AE_event = True
                             msg = 'Info:该行为AE开始，在AE页面有相应记录'
                             mark(ws2, 'A', row_ws2[0], msg)
-                            STapid_ws1 = sorted(STapid_ws1_pre.items(), key = lambda time:time[1]['GR'])
+                            STapid_ws1 = sorted(STapid_ws1_pre.items())
                             raw_ws1 = STapid_ws1[0]
                             continue
 
                         else:
-                            msg = 'Error:该行有AE发生，但未在AE页面找到相应记录'
+                            msg = 'Error:该行有{0}发生，但未在AE页面找到相应记录'.format(AnalyteName)
                             mark(ws2, 'A', row_ws2[0], msg)
                             continue
                                         
                     else:
                         checkline = False
-                        for line in STapid_ws1:
-                            if rs['RecordDate'] == line[1]['GR']:
-                                raw_ws1 = line
-                                msg = 'Info:该行对应AE页面第{}行，发生级别变化'.format(raw_ws1[0])
-                                mark(ws2, 'A', row_ws2[0], msg)
-                                checkline = True
-                                break
+                    #     for line in STapid_ws1:
+                    #         if rs['RecordDate'] == line[1]['GR']:
+                    #             raw_ws1 = line
+                    #             msg = 'Info:该行对应AE页面第{}行，发生级别变化'.format(raw_ws1[0])
+                    #             mark(ws2, 'A', row_ws2[0], msg)
+                    #             checkline = True
+                    #             break
                         if not checkline:
-                            msg = 'Info:该行处于AE发生中，无AE页面对应，未检测到级别变化'
+                            msg = 'Info:该行处于第{0}行AE {1} 发生中'.format(raw_ws1[0], code)
                             mark(ws2, 'A', row_ws2[0], msg)
                             continue
 
@@ -150,7 +153,7 @@ def lab2ae(data_ws1, data_ws2, ws2):
                     msg = 'Info:该行未录入数据'
                     mark(ws2, 'A', row_ws2[0], msg)
                     continue
-                elif rs['LabFlag'] == None and rs['AnalyteValue'] in ['#NA', '#ND']:
+                elif rs['LabFlag'] == None and rs['AnalyteValue'] in ['NA', 'ND', 'UN', '不适用', '未做']:
                     msg = 'Info:该项目未检测'
                     mark(ws2, 'A', row_ws2[0], msg)
                     continue
@@ -165,23 +168,23 @@ def lab2ae(data_ws1, data_ws2, ws2):
                 elif rs['LabFlag'] == '0' and AE_event:
                     EN = raw_ws1[1]['EN']
                     if rs['RecordDate'] == EN:
-                        msg = 'Info:该检测值回归正常'
+                        msg = 'Info:该行为AE结束，在AE页面有相应记录'
                     else:
-                        msg = 'Error:该行应为AE结束日期，但在AE页面第{}行无对应'.format(raw_ws1[0])
+                        msg = 'Error:该行应为AE结束日期，但在AE页面第{0}行{1}无对应'.format(raw_ws1[0], code)
                     raw_ws1 = None
                     mark(ws2, 'A', row_ws2[0], msg)
                     AE_event = False
                     continue
-                elif rs['LabFlag'] in ['+', '-'] and rs['CS'] == 'Not Clinically Significant' and not AE_event:
+                elif rs['LabFlag'] in ['+', '-'] and rs['CS'] == '异常无临床意义' and not AE_event:
                     msg = 'Info:该行NCS，无需核查'
                     mark(ws2, 'A', row_ws2[0], msg)
                     continue
-                elif rs['LabFlag'] in ['+', '-'] and rs['CS'] == 'Not Clinically Significant' and AE_event:
+                elif rs['LabFlag'] in ['+', '-'] and rs['CS'] == '异常无临床意义' and AE_event:
                     EN = raw_ws1[1]['EN']
                     if rs['RecordDate'] == EN:
-                        msg = 'Info:该行NCS回归正常'
+                        msg = 'Info:该行NCS为AE结束，在AE页面有相应记录'
                     else:
-                        msg = 'Error:该行应为AE结束日期，但在AE页面第{}行无对应'.format(raw_ws1[0])
+                        msg = 'Error:该行NCS应为AE结束日期，但在AE页面第{}行无对应'.format(raw_ws1[0])
                     raw_ws1 = None
                     mark(ws2, 'A', row_ws2[0], msg)
                     AE_event = False
