@@ -19,20 +19,21 @@ from tool_lib.outs.Coderevert_map import Coderevert_map_withsymbol as Coderevert
 from tool_lib.utils import findkeyscolumn, parse_dmy, mark
 
 
-keys1list = [r'{change}','[Subject]','[AEYN]','AETERM_DECOD','[AESTDAT]',
-             '[AEENDAT]','[AEONGO]']
-keys2list = [r'{change}','[Subject]','[RecordDate]','[AnalyteName]',
-             '[AnalyteValue]','[LabFlag]','[ClinSigValue]','[InstanceName]',
+keys1list = [r'{change}', '[Subject]', '[AEYN]', 'AETERM_DECOD', '[AESTDAT]',
+             '[AEENDAT]', '[AEONGO]']
+keys2list = [r'{change}', '[Subject]', '[RecordDate]', '[AnalyteName]',
+             '[AnalyteValue]', '[LabFlag]', '[ClinSigValue]', '[InstanceName]',
              '[ClinSigComment]']
 
 SHEETS_PATH = "..\sheets"
+
 
 def data1(ws, keys):
     data_ws = {}
     for row in range(2, ws.max_row+1):
         if ws[keys[r'{change}']+str(row)] == 'deleted' or \
            ws[keys['[AEYN]']+str(row)] == '否' or \
-           ws[keys['[AEYN]']+str(row)] == None:
+           ws[keys['[AEYN]']+str(row)] is None:
             continue
         patientId = ws[keys['[Subject]']+str(row)].value
         AE_PT = ws[keys['AETERM_DECOD']+str(row)].value
@@ -40,7 +41,7 @@ def data1(ws, keys):
 
         ST = ws[keys['[AESTDAT]']+str(row)].value
         EN = ws[keys['[AEENDAT]']+str(row)].value
-        
+
         AnalyteNamelist = list()
         AE_PTlist = list()
         if AE_PT in Coderevert_map:
@@ -50,7 +51,7 @@ def data1(ws, keys):
             for AE in Codelist_map:
                 if AE[0] in AnalyteNamelist:
                     AE_PTlist.extend([str(x) for x in Codelist_map[AE]])
-            AE_PTlist=list(set(AE_PTlist))
+            AE_PTlist = list(set(AE_PTlist))
             AE_PTlist.sort()
             AE_PTlist = tuple(AE_PTlist)
         else:
@@ -60,7 +61,7 @@ def data1(ws, keys):
         data_ws[patientId].setdefault(AE_PTlist, {})
         data_ws[patientId][AE_PTlist].setdefault(ST, {})
         data_ws[patientId][AE_PTlist][ST]. \
-            setdefault(row, {'EN':EN, 'AEONGO':AEONGO})
+            setdefault(row, {'EN': EN, 'AEONGO': AEONGO})
     return data_ws
 
 
@@ -69,7 +70,7 @@ def data2(ws, keys):
     for row in range(2, ws.max_row+1):
         if ws[keys[r'{change}']+str(row)].value == 'deleted':
             continue
-        if ws[keys['[Subject]']+str(row)].value == None:
+        if ws[keys['[Subject]']+str(row)].value is None:
             continue
         patientId = ws[keys['[Subject]']+str(row)].value
         RecordDate = ws[keys['[RecordDate]']+str(row)].value
@@ -100,11 +101,10 @@ def lab2ae(data_ws1, data_ws2, ws2):
 
     for id in data_ws2:
         pid = data_ws2[id]
-        for AnalyteName in pid:            
+        for AnalyteName in pid:
             STapid_ws1 = {}
             apid = pid[AnalyteName]
-            sortedapid = sorted(apid.items(), 
-                key = lambda time:time[1]['RecordDate'])
+            sortedapid = sorted(apid.items(), key=lambda time: time[1]['RecordDate'])
             AE_event = False
             raw_ws1 = None
             AETERM_PT = None
@@ -114,12 +114,12 @@ def lab2ae(data_ws1, data_ws2, ws2):
                     if id not in data_ws1.keys():
                         msg = 'Error:该患者在AE页面无记录'
                         mark(ws2, 'A', row_ws2[0], msg)
-                        continue       
-                    
+                        continue
+
                     if (AnalyteName, rs['LabFlag']) not in Codelist_map:
                         msg = 'Warn:该行分析物名称无对应不良事件名称，请核查'
                         mark(ws2, 'A', row_ws2[0], msg)
-                        continue 
+                        continue
 
                     if not AE_event:
                         codelist = Codelist_map[(AnalyteName, rs['LabFlag'])]
@@ -132,12 +132,12 @@ def lab2ae(data_ws1, data_ws2, ws2):
                                     break
                             if codecheck:
                                 break
-                        
+
                         if not codecheck:
                             msg = 'Error:该患者在AE页面无{}记录'.format(AnalyteName)
                             mark(ws2, 'A', row_ws2[0], msg)
-                            continue                         
-                    
+                            continue
+
                         apid_ws1 = data_ws1[id][AETERM_PT]
                         if rs['RecordDate'] in apid_ws1:
                             STapid_ws1_pre = copy.deepcopy(
@@ -154,7 +154,7 @@ def lab2ae(data_ws1, data_ws2, ws2):
                                 .format(AnalyteName)
                             mark(ws2, 'A', row_ws2[0], msg)
                             continue
-                                        
+
                     else:
                         checkline = False
                     #     for line in STapid_ws1:
@@ -170,16 +170,16 @@ def lab2ae(data_ws1, data_ws2, ws2):
                             mark(ws2, 'A', row_ws2[0], msg)
                             continue
 
-                if rs['LabFlag'] == None and rs['AnalyteValue'] == None:
+                if rs['LabFlag'] is None and rs['AnalyteValue'] is None:
                     msg = 'Info:该行未录入数据'
                     mark(ws2, 'A', row_ws2[0], msg)
                     continue
-                elif rs['LabFlag'] == None and \
-                     rs['AnalyteValue'] in ['NA', 'ND', 'UN', '不适用', '未做']:
+                elif rs['LabFlag'] is None and \
+                        rs['AnalyteValue'] in ['NA', 'ND', 'UN', '不适用', '未做']:
                     msg = 'Info:该项目未检测'
                     mark(ws2, 'A', row_ws2[0], msg)
                     continue
-                elif rs['LabFlag'] == None:
+                elif rs['LabFlag'] is None:
                     msg = 'Error:实验室检测范围缺失'
                     mark(ws2, 'A', row_ws2[0], msg)
                     continue
@@ -199,14 +199,14 @@ def lab2ae(data_ws1, data_ws2, ws2):
                     AE_event = False
                     continue
                 elif rs['LabFlag'] in ['+', '-'] and \
-                     rs['CS'] == '异常无临床意义' and \
-                     not AE_event:
+                        rs['CS'] == '异常无临床意义' and \
+                        not AE_event:
                     msg = 'Info:该行NCS，无需核查'
                     mark(ws2, 'A', row_ws2[0], msg)
                     continue
                 elif rs['LabFlag'] in ['+', '-'] and \
-                     rs['CS'] == '异常无临床意义' and \
-                     AE_event:
+                        rs['CS'] == '异常无临床意义' and \
+                        AE_event:
                     EN = raw_ws1[1]['EN']
                     if rs['RecordDate'] == EN:
                         msg = 'Info:该行NCS为AE结束，在AE页面有相应记录'
@@ -218,8 +218,8 @@ def lab2ae(data_ws1, data_ws2, ws2):
                     AE_event = False
                     continue
                 else:
-                    msg='error:该行异常，但未判断CS or NCS'
-                    mark(ws2,'A',row_ws2[0],msg)
+                    msg = 'error:该行异常，但未判断CS or NCS'
+                    mark(ws2, 'A', row_ws2[0], msg)
 
     return ws2
 
@@ -229,7 +229,7 @@ def ae2lab(data_ws1, data_ws2, ws1):
     ws1['A1'].value = '结束日期比较'
     ws1.insert_cols(1)
     ws1['A1'].value = '开始日期比较'
-    
+
     for id in data_ws1:
         pid = data_ws1[id]
         for AE_PT_list in pid:
@@ -239,9 +239,9 @@ def ae2lab(data_ws1, data_ws2, ws1):
                     AnalyteNames = Coderevert_map[AE_PT]
                 else:
                     AnalyteNames = None
-                for ST in apid:                
+                for ST in apid:
                     sapid = apid[ST]
-                    # sortedsapid = sorted(sapid.items(), key = lambda time:time[1]['GR'])
+                    # sortedsapid = sorted(sapid.items(), key=lambda time: time[1]['GR'])
                     for row_ws1 in sapid:
                         msg = ''
                         msg_s = ''
@@ -270,13 +270,13 @@ def ae2lab(data_ws1, data_ws2, ws1):
                         for i in pid_ws2_list:
                             for key in i:
                                 # if i[key]['CS'] == "异常有临床意义":
-                                # if key in pid_ws2_all and 
+                                # if key in pid_ws2_all and
                                 pid_ws2_all.setdefault(key, i[key])
                         pid_ws2_sort = sorted(pid_ws2_all.items(),
-                            key = lambda time:time[1]['RecordDate'])
-                        
+                                              key=lambda time: time[1]['RecordDate'])
+
                         AnalyteNamecheck = False
-                        if AnalyteNames == None:
+                        if AnalyteNames is None:
                             msg = 'Warn:该行不良事件{}无对应分析物，需手动核查'.format(AE_PT)
                             mark(ws1, 'A', row_ws1, msg)
                             mark(ws1, 'B', row_ws1, msg)
@@ -302,26 +302,28 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                     row_ws2 = i[0]
                                     rapid_ws2 = i[1]
                                     if rapid_ws2['RecordDate'] == ST:
-                                        if rapid_ws2['CS'] == '异常有临床意义' and STcheck == False:
+                                        if rapid_ws2['CS'] == '异常有临床意义' and STcheck is False:
                                             STcheck = True
-                                            msg_s = ("Info:该AE记录开始日期与Lab页面第{0}行"
-                                            "{1} {2} {3} {4} 匹配成功".format(
-                                                row_ws2, rapid_ws2['visitname'],
-                                                rapid_ws2['AnalyteName'], rapid_ws2['CS'],
-                                                rapid_ws2['ClinSigComment']))
-                                        elif rapid_ws2['CS'] != '异常有临床意义' and STcheck == False:
-                                            msg_s = ('Error:该AE记录在lab页面不是CS,与第'
-                                            '{0}行 {1} {2} {3} {4} {5}匹配失败' \
-                                                .format(
+                                            msg_s = (
+                                                "Info:该AE记录开始日期与Lab页面第{0}行"
+                                                "{1} {2} {3} {4} 匹配成功".format(
+                                                    row_ws2, rapid_ws2['visitname'],
+                                                    rapid_ws2['AnalyteName'],
+                                                    rapid_ws2['CS'],
+                                                    rapid_ws2['ClinSigComment']))
+                                        elif rapid_ws2['CS'] != '异常有临床意义' and STcheck is False:
+                                            msg_s = (
+                                                'Error:该AE记录在lab页面不是CS,与第'
+                                                '{0}行 {1} {2} {3} {4} {5}匹配失败'.format(
                                                     row_ws2,
                                                     rapid_ws2['visitname'],
                                                     rapid_ws2['AnalyteName'],
                                                     rapid_ws2['CS'],
                                                     rapid_ws2['ClinSigComment'],
                                                     rapid_ws2['RecordDate']))
-                                    elif (EN and 
-                                         (rapid_ws2['RecordDate'] == sapid[row_ws1]['EN'] or 
-                                            sapid[row_ws1]['EN'] is None) and 
+                                    elif (EN and
+                                         (rapid_ws2['RecordDate'] == sapid[row_ws1]['EN'] or
+                                            sapid[row_ws1]['EN'] is None) and
                                          ENcheck == False):
                                         if rapid_ws2['CS'] == '异常有临床意义':
                                             if sapid[row_ws1]['AEONGO'] == "是":
@@ -331,7 +333,7 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                                 msg_e = ('Error:该AE记录在lab页面为CS,'
                                                 '与第{0}行 {1} {2} {3} {4} {5}匹配失败' \
                                                     .format(
-                                                        row_ws2, 
+                                                        row_ws2,
                                                         rapid_ws2['visitname'],
                                                         rapid_ws2['AnalyteName'],
                                                         rapid_ws2['CS'],
@@ -364,7 +366,7 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                                 else:
                                                     rsg = ','.join("{0} {1} {2}".format(i['visitname'], i['AnalyteName'], i['CS']) for i in End_lines)
                                                     msg_e = ("Info:该AE记录结束日期与Lab页面 {} 匹配成功".format(rsg))
-                                
+
                                 if not STcheck:
                                     msg_s = '\n'.join([msg_s, 'Error:该AE记录开始日期'
                                     '与第{0}行 {1} {2} {3} {4} {5}匹配失败'.format(
@@ -377,16 +379,17 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                 if EN and not ENcheck:
                                     msg_e = '\n'.join([msg_e, 'Error:该AE记录结束日期'
                                     '与第{0}行 {1} {2} {3} {4} 匹配失败'.format(
-                                        row_ws2,rapid_ws2['visitname'],
+                                        row_ws2, rapid_ws2['visitname'],
                                         rapid_ws2['AnalyteName'], rapid_ws2['CS'],
                                         rapid_ws2['RecordDate'])])
                                 mark(ws1, 'A', row_ws1, msg_s)
                                 mark(ws1, 'B', row_ws1, msg_e)
 
-                        if not AnalyteNamecheck:        
+                        if not AnalyteNamecheck:
                             msg = 'Error:该患者在Lab页面无{}对应检查项'.format(AE_PT)
                             mark(ws1, 'A', row_ws1, msg)
                             continue
+
 
 def get_files():
     files_raw = os.listdir(SHEETS_PATH)
@@ -394,13 +397,15 @@ def get_files():
     for file in files_raw:
         if "checkout" in file:
             files.remove(file)
-    
+
     return files
+
 
 def get_a_file(files, filename):
     for file in files:
         if filename in file:
-            return file                         
+            return file
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -430,7 +435,7 @@ if __name__ == "__main__":
 
         wb2 = openpyxl.load_workbook(lab_path)
         ws2 = wb2[lab_sheet]
-               
+
         keys1 = findkeyscolumn(ws1, keys1list)
         keys2 = findkeyscolumn(ws2, keys2list)
 
@@ -442,7 +447,6 @@ if __name__ == "__main__":
 
         wb1.save(wb1savepath)
         wb2.save(wb2savepath)
-        
 
     finally:
         wb1.close()
