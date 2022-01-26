@@ -319,7 +319,7 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                                     rapid_ws2['CS'],
                                                     rapid_ws2['ClinSigComment'],
                                                     rapid_ws2['RecordDate']))
-                                    elif (EN and 
+                                    elif (EN and rapid_ws2['RecordDate'] >= ST and
                                          (rapid_ws2['RecordDate'] == sapid[row_ws1]['EN'] or 
                                             sapid[row_ws1]['EN'] is None) and 
                                          ENcheck == False):
@@ -337,7 +337,8 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                                         rapid_ws2['CS'],
                                                         rapid_ws2['ClinSigComment'],
                                                         rapid_ws2['RecordDate']))
-                                        else:
+                                                ENcheck = True
+                                        elif rapid_ws2['RecordDate'] >= ST:
                                             if sapid[row_ws1]['AEONGO'] == "是":
                                                 msg_e = ("Error: 该AE记录在lab页面最近日期的一条不是CS，"
                                                 "与第{0}行 {1} {2} {3} {4} {5}匹配失败，"
@@ -348,6 +349,7 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                                     rapid_ws2['CS'],
                                                     rapid_ws2['ClinSigComment'],
                                                     rapid_ws2['RecordDate']))
+                                                ENcheck = True
                                             elif sapid[row_ws1]['AEONGO'] == "否" and ENcheck == False:
                                                 if rapid_ws2['AnalyteName'] in AN_left:
                                                     AN_left.remove(rapid_ws2['AnalyteName'])
@@ -361,9 +363,11 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                                         rapid_ws2['visitname'],
                                                         rapid_ws2['AnalyteName'],
                                                         rapid_ws2['CS']))
+                                                    break
                                                 else:
                                                     rsg = ','.join("{0} {1} {2}".format(i['visitname'], i['AnalyteName'], i['CS']) for i in End_lines)
                                                     msg_e = ("Info:该AE记录结束日期与Lab页面 {} 匹配成功".format(rsg))
+                                                    break
                                 
                                 if not STcheck:
                                     msg_s = '\n'.join([msg_s, 'Error:该AE记录开始日期'
@@ -374,12 +378,14 @@ def ae2lab(data_ws1, data_ws2, ws1):
                                         rapid_ws2['RecordDate'])])
                                 # if GR and not GRcheck:
                                 #     msg = '\n'.join([msg, 'Error:该AE记录级别变化日期匹配失败'])
-                                if EN and not ENcheck:
+                                if EN and not ENcheck and sapid[row_ws1]['AEONGO'] != "是":
                                     msg_e = '\n'.join([msg_e, 'Error:该AE记录结束日期'
                                     '与第{0}行 {1} {2} {3} {4} 匹配失败'.format(
                                         row_ws2,rapid_ws2['visitname'],
                                         rapid_ws2['AnalyteName'], rapid_ws2['CS'],
                                         rapid_ws2['RecordDate'])])
+                                elif EN and not ENcheck:
+                                    msg_e = "Info: 该AE {} 持续".format(AE_PT)
                                 mark(ws1, 'A', row_ws1, msg_s)
                                 mark(ws1, 'B', row_ws1, msg_e)
 

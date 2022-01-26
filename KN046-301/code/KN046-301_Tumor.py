@@ -137,14 +137,20 @@ def pid_revert(pid):
         rows_cc = []
         if 'CC' in instance or 'cc' in instance:
             pid_cc.setdefault(instance, {})
+            pid_cc[instance].setdefault('TLDAT_error', False)
             for row in pid[instance]:
+                if pid[instance][row]['[TLDAT]'] is None:
+                    pid_cc[instance]['TLDAT_error'] = True
                 rows_cc.append(row)
                 for key in pid[instance][row]:
                     pid_cc[instance].setdefault(key, pid[instance][row][key])
             pid_cc[instance].setdefault('rows',rows_cc)
         else:
             pid_normal.setdefault(instance, {})
+            pid_normal[instance].setdefault('TLDAT_error', False)
             for row in pid[instance]:
+                if pid[instance][row]['[TLDAT]'] is None:
+                    pid_normal[instance]['TLDAT_error'] = True
                 rows.append(row)
                 for key in pid[instance][row]:
                     pid_normal[instance].setdefault(key, pid[instance][row][key])
@@ -224,13 +230,27 @@ def bbzpidcheck(pid_ws1_ori, pid_ws4_ori, ws1):
     pid_normal, pid_cc = pid_revert(pid_ws1)
 
     if pid_normal != {}:
+        pid_normal = error_check(pid_normal, ws1)
         pid_normal = sorted(pid_normal.items(), key = lambda time:time[1]['[TLDAT]'])
         bbzpidresult(pid_normal, pid_ws4)
             
     if pid_cc != {}:
+        pid_cc = error_check(pid_cc, ws1)
         pid_cc = sorted(pid_cc.items(), key = lambda time:time[1]['[TLDAT]'])
         bbzpidresult(pid_cc, pid_ws4)   
     return 
+
+
+def error_check(pid, ws):
+    ''' Remove lines whose [TLDAT] is empty, and mark error '''
+    pid_copy = deepcopy(pid)
+    for instance in pid:
+        if pid[instance]['TLDAT_error']:
+            for row in pid[instance]['rows']:
+                msg = "Error: 该访视存在 TLDAT 缺失"
+                mark(ws, 'A', row, msg)
+            pid_copy.pop(instance)
+    return pid_copy
 
 
 def bbzcheck(data_ws1_ori, data_ws4, ws1):
