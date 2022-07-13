@@ -13,7 +13,7 @@ if __name__ == "__main__":
     rave_manual_Codelist = r'source\rave_manual_Codelist.xlsx'
 
     wb = openpyxl.load_workbook(rave_manual_Codelist)
-    ws = wb[r'KN046-301 AE&LAB']
+    ws = wb[r'KN046-302 AE&LAB']
 
     Codelist_map = {}
     Codelist_map_plus = {}
