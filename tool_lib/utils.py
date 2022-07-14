@@ -30,18 +30,19 @@ def mark(ws, col, row, msg):
     return
 
 
-def findkeyscolumn(ws, keys_raw):
+def findkeyscolumn(ws, keys_raw, row_range=[1]):
     keys = {}
     keyslist = copy.deepcopy(keys_raw)
-    for column in range(1, ws.max_column+1):
-        row_letter = get_column_letter(column)
-        if ws[row_letter+'1'].value == None:
-            continue
-        for key in keyslist:
-            if key in ws[row_letter+'1'].value:
-                keys.setdefault(key, row_letter)
-                keyslist.remove(key)
-                break
+    for row in row_range:
+        for column in range(1, ws.max_column+1):
+            row_letter = get_column_letter(column)
+            if ws[row_letter+str(row)].value == None:
+                continue
+            for key in keyslist:
+                if key in ws[row_letter+str(row)].value:
+                    keys.setdefault(key, row_letter)
+                    keyslist.remove(key)
+                    break
     
     for key in keys:
         if keys[key] == None:

@@ -14,7 +14,7 @@ sys.path.append("..\..")
 
 from tool_lib.utils import mark, findkeyscolumn, exist, message
 
-keys1list = ['筛选号', '访视名称', '实际访视时间','是否跳过访视', '当前使用药物']
+keys1list = ['筛选号', '访视名称', '实际访视时间', '是否跳过访视', '当前使用药物']
 keys2list = [r'{Change}','[Subject]', '[InstanceName]', '[EXIDEN]', '[EXYN]']
 
 SHEETS_PATH = "..\sheets"
@@ -290,8 +290,8 @@ if __name__ == "__main__":
         
         wb2 = openpyxl.load_workbook(gy_path)
         ws2 = wb2[ywgy_sheet]
-               
-        keys1 = {'筛选号': 'C', '访视名称': 'L', '当前使用药物': 'R', '是否跳过访视': 'O', '实际访视时间': "N"}
+
+        keys1 = findkeyscolumn(ws1, keys1list, [5, 6])
         keys2 = findkeyscolumn(ws2, keys2list)
 
         data_ws1 = data1(ws1, keys1)
